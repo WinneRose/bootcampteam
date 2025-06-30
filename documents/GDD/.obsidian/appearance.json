@@ -1,0 +1,9 @@
+{
+  "cssTheme": "Encore",
+  "enabledCssSnippets": [
+    "WinneRose-Images",
+    "GalleryCard",
+    "MultiColumn",
+    "WideViews"
+  ]
+}

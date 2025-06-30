@@ -1,0 +1,29 @@
+/* General table styling */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 14px;
+  text-align: center; /* Center-align text */
+  background-color: #2e2e2e; /* Dark mode background */
+  color: #c9c9c9; /* Light text for contrast */
+}
+
+/* Single row table */
+th, td {
+  padding: 10px;
+  border: 1px solid #d8cbfb; /* Border for cells */
+}
+
+/* Header styling */
+th {
+  background-color: #544f61; /* Slightly darker background for header */
+  font-weight: bold;
+  color: #f8f8f2; /* Bright text */
+}
+
+/* Hover effect */
+td:hover {
+  background-color: #968dae;
+  color: #ffffff;
+}

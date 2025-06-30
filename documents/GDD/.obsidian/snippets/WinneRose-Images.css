@@ -1,0 +1,23 @@
+/* Align image to the right */
+div[src$="#right"], span[src$="#right"], img[src$="#right"] {
+   display: block;
+   text-align: right;
+   margin-left: auto;
+   margin-right: 0;
+}
+
+/* Align image to the center */
+div[src$="#center"], span[src$="#center"], img[src$="#center"] {
+   display: block;
+   text-align: center;
+   margin-left: auto;
+   margin-right: auto;
+}
+
+/* Align image to the left */
+div[src$="#left"], span[src$="#left"], img[src$="#left"] {
+   display: block;
+   text-align: left;
+   margin-left: 0;
+   margin-right: auto;
+}
