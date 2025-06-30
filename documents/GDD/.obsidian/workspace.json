@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Oyun Tasarım Dökümaları/GDD.md",
+                "file": "Planlamalar/Takım Koordinasyonu.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "GDD"
+              "title": "Takım Koordinasyonu"
             }
           },
           {
@@ -85,7 +85,7 @@
             }
           },
           {
-            "id": "ec7d1906c1565934",
+            "id": "2c4cf727ecc5979b",
             "type": "leaf",
             "state": {
               "type": "mk-path-view",
@@ -213,13 +213,23 @@
   },
   "active": "294fe96aaaae0bdc",
   "lastOpenFiles": [
+    "Dökümanlar/UI_UX.md",
+    "Dökümanlar/Seviyeler.md",
+    "Dökümanlar/Pazarlama.md",
+    "Dökümanlar/Mekanikler.md",
+    "Dökümanlar/Karakterler.md",
+    "Dökümanlar/Hikaye.md",
+    "Dökümanlar/GDD.md",
+    "Dökümanlar",
+    "Oyun Tasarım Dökümaları/Seviyeler.md",
+    "Oyun Tasarım Dökümaları/UI_UX.md",
+    "Oyun Tasarım Dökümaları/Pazarlama.md",
+    "Oyun Tasarım Dökümaları/Mekanikler.md",
     "Oyun Tasarım Dökümaları/Karakterler.md",
     "Oyun Tasarım Dökümaları/Hikaye.md",
     "Oyun Tasarım Dökümaları/GDD.md",
+    "Tags",
     "Kaynaklar/Ekler/Oyun Akış.drawio.png",
-    "Oyun Tasarım Dökümaları/Mekanikler.md",
-    "Oyun Tasarım Dökümaları/Pazarlama.md",
-    "Oyun Tasarım Dökümaları/Seviyeler.md",
     "Referanslar/Referanslar.md",
     "Oyun Tasarım Dökümaları/Oyun Akış.drawio.png",
     "Diyagramlar/Oyun Akış.drawio",
@@ -232,7 +242,6 @@
     "Pazarlama.md",
     "Planlamalar",
     "Referanslar",
-    "Oyun Tasarım Dökümaları/UI_UX.md",
     "Oyun Tasarım Dökümaları",
     "UI_UX.md",
     "Hikaye.md",
@@ -240,19 +249,11 @@
     "Seviyeler.md",
     "Karakterler.md",
     "Game Design Dökümanı (GDD).md",
-    "Tags",
     "Kaynaklar/Ekler/Pasted image 20250630134122.png",
     "İletişim/Index.md",
     "İletişim/Etkili İletişimin Ögeleri.md",
-    "İletişim",
     "Proje Yönetimi/Proje Yönetimi.md",
-    "Girişimcilik/Girişimcilik.md",
-    "Oyun Geliştirme/Unity Notları/Bilgiler/Arayüz.md",
-    "Proje Yönetimi/Modül 1/Proje Yaşam Döngüleri.md",
     "Untitled.canvas",
-    "Proje Yönetimi/Modül 2/Proje Başarısını Ölçme.md",
-    "Proje Yönetimi/Modül 2/Paydaşların Aktivitesi.md",
-    "Proje Yönetimi/Modül 2/Faydalı Kaynaklar.md",
     "Kaynaklar/Ekler/Pasted image 20250608003655.png",
     "Kaynaklar/Ekler/Pasted image 20250528171109.png",
     "Kaynaklar/Ekler/Pasted image 20250424174945.png",
