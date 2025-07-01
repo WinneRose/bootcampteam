@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Planlamalar/Takım Koordinasyonu.md",
+                "file": "Dökümanlar/GDD.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Takım Koordinasyonu"
+              "title": "GDD"
             }
           },
           {
@@ -85,7 +85,7 @@
             }
           },
           {
-            "id": "2c4cf727ecc5979b",
+            "id": "4a08507b96323400",
             "type": "leaf",
             "state": {
               "type": "mk-path-view",
@@ -213,6 +213,7 @@
   },
   "active": "294fe96aaaae0bdc",
   "lastOpenFiles": [
+    "Planlamalar/Takım Koordinasyonu.md",
     "Dökümanlar/UI_UX.md",
     "Dökümanlar/Seviyeler.md",
     "Dökümanlar/Pazarlama.md",
@@ -238,7 +239,6 @@
     "Kaynaklar/Ekler/Pasted image 20250630223405.png",
     "Kaynaklar/Ekler",
     "Kaynaklar",
-    "Planlamalar/Takım Koordinasyonu.md",
     "Pazarlama.md",
     "Planlamalar",
     "Referanslar",
