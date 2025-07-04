@@ -13,22 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Dökümanlar/GDD.md",
+                "file": "Planlamalar/Takım Koordinasyonu.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "GDD"
-            }
-          },
-          {
-            "id": "7405cea1c2d9686c",
-            "type": "leaf",
-            "state": {
-              "type": "log-log",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "Plugin no longer active"
+              "title": "Takım Koordinasyonu"
             }
           }
         ]
@@ -85,7 +75,7 @@
             }
           },
           {
-            "id": "4a08507b96323400",
+            "id": "3e2a8e52aba90714",
             "type": "leaf",
             "state": {
               "type": "mk-path-view",
@@ -213,14 +203,14 @@
   },
   "active": "294fe96aaaae0bdc",
   "lastOpenFiles": [
-    "Planlamalar/Takım Koordinasyonu.md",
+    "Dökümanlar/GDD.md",
+    "Dökümanlar/Hikaye.md",
+    "Dökümanlar/Karakterler.md",
+    "Dökümanlar/Mekanikler.md",
+    "Dökümanlar/Pazarlama.md",
     "Dökümanlar/UI_UX.md",
     "Dökümanlar/Seviyeler.md",
-    "Dökümanlar/Pazarlama.md",
-    "Dökümanlar/Mekanikler.md",
-    "Dökümanlar/Karakterler.md",
-    "Dökümanlar/Hikaye.md",
-    "Dökümanlar/GDD.md",
+    "Planlamalar/Takım Koordinasyonu.md",
     "Dökümanlar",
     "Oyun Tasarım Dökümaları/Seviyeler.md",
     "Oyun Tasarım Dökümaları/UI_UX.md",

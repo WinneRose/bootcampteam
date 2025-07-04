@@ -30,11 +30,11 @@
 
 ## 2. Kişisel Özellikler
 
-| Özellik          | Açıklama                                                                                         |
-|------------------|--------------------------------------------------------------------------------------------------|
-| Enerjik          | Enerjisi yüksek bir yapıya sahiptir. Bu durum, oyun içerisinde dayanıklılık değerinin yüksek olmasını sağlar. |
-| Bilge            | Doğadaki bazı mesajları sezgisel olarak algılayabilir. Seslerle iletişim kurabilir; örneğin susayan kökleri hissedebilir. |
-| Gündüz Odaklı    | Gündüz saatlerinde daha aktiftir; enerji üretimi ve çevresel etkileşimi artar.                   |
+| Özellik       | Açıklama                                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Enerjik       | Enerjisi yüksek bir yapıya sahiptir. Bu durum, oyun içerisinde dayanıklılık değerinin yüksek olmasını sağlar.             |
+| Bilge         | Doğadaki bazı mesajları sezgisel olarak algılayabilir. Seslerle iletişim kurabilir; örneğin susayan kökleri hissedebilir. |
+| Gündüz Odaklı | Gündüz saatlerinde daha aktiftir; enerji üretimi ve çevresel etkileşimi artar.                                            |
 
 ---
 
@@ -59,7 +59,7 @@ Gündüz vakitlerinde aktifleşir, güneş ışığını kullanarak doğaya müd
 
 Sol karakteri, doğanın kendini yenileme gücünün ve yaşam enerjisinin sembolüdür. Güneş gibi besler, ısıtır, ancak gerektiğinde yakıcı bir güçle koruyucu rol de üstlenir. Karakterin temel çatışması, ne zaman yumuşak davranması, ne zaman müdahaleci olması gerektiğiyle ilgilidir.
 
-> "Sol, bir meyveden fazlasıdır; doğanın enerjisini taşıyan bir iradedir. Güneş gibi, yaşatır ve ge
+> "Sol, bir meyveden fazlasıdır; doğanın enerjisini taşıyan bir iradedir. 
 
 
 # Karakter Profili: Dew
@@ -77,12 +77,12 @@ Sol karakteri, doğanın kendini yenileme gücünün ve yaşam enerjisinin sembo
 
 ## 2. Kişisel Özellikler
 
-| Özellik         | Açıklama                                                                                      |
-|------------------|-----------------------------------------------------------------------------------------------|
-| Donuk Yapı       | Enerjik değildir; sakin, yavaş ama kararlı hareket eder.                                     |
-| Suya Duyarlılık  | Çiğ damlalarıyla etkileşim kurabilir, su kaynaklarını hissedebilir ve yönlendirebilir.       |
-| Besleyici Güç    | Çevresindeki bitkilerin gelişimini destekler, büyümelerini hızlandırabilir.                  |
-| Nem Üretimi      | Gece saatlerinde ortamdaki nem oranını artırabilir, bu da çevresel canlılığa katkı sağlar.   |
+| Özellik         | Açıklama                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| Donuk Yapı      | Enerjik değildir; sakin, yavaş ama kararlı hareket eder.                                   |
+| Suya Duyarlılık | Çiğ damlalarıyla etkileşim kurabilir, su kaynaklarını hissedebilir ve yönlendirebilir.     |
+| Besleyici Güç   | Çevresindeki bitkilerin gelişimini destekler, büyümelerini hızlandırabilir.                |
+| Nem Üretimi     | Gece saatlerinde ortamdaki nem oranını artırabilir, bu da çevresel canlılığa katkı sağlar. |
 
 ---
 

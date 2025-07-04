@@ -7,7 +7,6 @@ Kelkit Vadisi, Türkiye’nin kuzeydoğusunda yer alan ve Anadolu’nun en uzun 
 - Yüksek rakımlara rağmen **yıl boyunca yeşil kalabilen alanlar** bulunur,  
 - **Yaban çileği** gibi hassas bitkiler hâlâ doğal ortamlarında yetişir,  
 - **Geleneksel tarım** devam eder, makineleşme minimumdadır,  
-- Ve belki de en önemlisi: **Kar yağana kadar ürün alınabilmektedir**.
 
 Bu coğrafya, küresel çölleşme çağında doğanın son direniş alanlarından biri hâline gelmiştir.
 
@@ -32,7 +31,7 @@ Ancak bir bölge, doğanın belleğinde hâlâ canlıdır:
 Burada, toprak hâlâ yaşam taşımaktadır.  
 Ama zaman daralıyor.  
 Kış yaklaşıyor.  
-Ve vadinin de son gücü tükenmek üzere.
+Ve diğer vadilerin umudu bu vadiye bağlıdır
 
 ---
 
@@ -44,7 +43,7 @@ Bu plan, sıradan tohumlara değil;
 **bilinç kazandırılmış iki özel çileğe** emanettir.
 
 - **Sol** – Güneşin hafızasını taşıyan, enerjisiyle kurak toprağı canlandırabilen bir olgun çilek.  
-- **Dew** – Çiyin hafifliğini ve suyun zarafetini taşıyan yeşil, olgunlaşmamış bir çilek.
+- **Dew** – Çiğin hafifliğini ve suyun zarafetini taşıyan yeşil, olgunlaşmamış bir çilek.
 
 Bu ikili, Kelkit Vadisi’nin derinliklerinde **doğanın son savunma hattı** olarak görev alır.
 

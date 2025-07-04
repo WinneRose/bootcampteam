@@ -43,11 +43,10 @@ Bu belge, Tohum Etkisi oyunundaki iki ana karakter olan **Sol** (olgunlaşmış 
 #### 5. Çürüme Hassasiyeti
 
 - Sol’un yolu kurumuş topraklarla çevrilidir.
-- Çevredeki susuz bitkilerden aldığı sezgilerle suyun yönünü tahmin eder; ancak bu sezgiler zaman zaman kaybolur.
 - Çürükçül alanlara maruz kaldığında çürüme faktörü artar:
     - Bu durum Sol’un aromatik yayılımını azaltır.
     - Yeşertme etkisinin alanı küçülür, bazı bitkiler tepki vermez hale gelir.
-- Oyuncu, çürümeyi azaltmak için Dew'in yardımıyla nemli bölgeleri bulmalı ya da tehlikeli alanlardan hızla geçmelidir.
+- Oyuncu, çürümeyi azaltmak için Dew'in yardımıyla nemli bölgeleri bulmalı.
     
 
 ---
@@ -76,16 +75,10 @@ Bu belge, Tohum Etkisi oyunundaki iki ana karakter olan **Sol** (olgunlaşmış 
 - Sol ile kesişirse “Doğal Senfoni” oluşur.
     
 
-#### 3. Toprak Belleği Uyarımı
-
-- Köklerle etkileşerek geçmiş yaşam izlerini uyandırır.
-- Yeni görevler, yollar veya flora çeşitleri açığa çıkar.
-    
-
-#### 4. Mikro Geçit Uyumu
+#### 3. Mikro Geçit Uyumu
 
 - Küçük ve sulu yapısı sayesinde nemli dar geçitlerden geçebilir.
-#### 5. Çürümeye Direnç
+#### 4. Çürümeye Direnç
 
 - Dew’in yapısı nemi tutabildiği için çürükçül bölgelerde daha uzun süre dayanabilir.
 - Nem yayarak çürümeyi yavaşlatabilir veya geçici olarak etkisizleştirebilir.
@@ -93,7 +86,7 @@ Bu belge, Tohum Etkisi oyunundaki iki ana karakter olan **Sol** (olgunlaşmış 
 
 #### 6. Su Tutma Kapasitesi
 
-- Dew çürümeye maruz kaldığında, vücudunun nem tutma kapasitesi azalır.
+- Dew çürümeye maruz kaldığında, vücudunun su tutma kapasitesi azalır.
 - Bu durum, su taşıma ve nem üretimi gibi yeteneklerinin etkinliğini geçici olarak düşürür.
 - Dew’in yeniden nem kazanabilmesi için dinlenmesi veya su kaynağına erişmesi gerekir.
 
@@ -101,12 +94,12 @@ Bu belge, Tohum Etkisi oyunundaki iki ana karakter olan **Sol** (olgunlaşmış 
 
 ## Etkileşimli Kombinasyonlar (Sol & Dew)
 
-|Kombinasyon|Etki|
-|---|---|
-|Dew'in Nem Alanı + Sol’un Işık Alanı|"Doğal Senfoni" → Flora patlaması, hızlı çevre restorasyonu|
-|Dew su taşır, Sol fotosentez yapar|Kurak alanlar daha hızlı ve yoğun şekilde canlanır|
-|Dew zararlıyı nemle sersemletir, Sol patlama yapar|Alan kontrolü + temizleme|
-|Dew gece nem toplar, Sol gündüz ışık sağlar|Gece–gündüz uyumu ile kalıcı restorasyon elde edilir|
+| Kombinasyon                                        | Etki                                                        |
+| -------------------------------------------------- | ----------------------------------------------------------- |
+| Dew'in Nem Alanı + Sol’un Işık Alanı               | "Doğal Senfoni" → Flora patlaması, hızlı çevre restorasyonu |
+| Dew su taşır, Sol fotosentez yapar                 | Kurak alanlar daha hızlı ve yoğun şekilde canlanır          |
+| Dew zararlıyı nemle sersemletir, Sol patlama yapar | Alan kontrolü + temizleme                                   |
+| Dew gece nem toplar, Sol gündüz ışık sağlar        | Gece–gündüz uyumu ile kalıcı restorasyon elde edilir        |
 
 ---
 
