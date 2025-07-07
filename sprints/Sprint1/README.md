@@ -1,11 +1,28 @@
-## 📅 Sprint 1 - Açıklamaları
+## 📅 Sprint 1 
 
 Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili dökümanlar aşağıdaki başlıklar altında sunulmuştur:
 
-### 🔗 Sprint Board ve Puanlama
+### 🔗 Sprint Detayları
 
 Sprint board ve ilgili görev puanlamaları detaylı şekilde Miro panosunda görülebilir:
 👉 [Sprint Board - Miro](https://miro.com/app/board/uXjVIk6Cir0=/)
+
+### Sprint 1 – Board & Puanlama
+
+* Karakter Modelleri Hazırlanması **30**
+* Unity Proje Oluşturma **10**
+* GDD Hazırlanması **40**
+* Oyun Fikirleri Oluşturma **25**
+* Oyunun Seviyelerinin Planlanması **30**
+* Github Repo Oluşturma **15**
+
+**🎯 Toplam: 150 Puan**
+
+> Notlar: Olgun Çilek, Olmamış Çilek,  İki Kişilik, Doğayı Koru Mesajı, Birlikte Başar
+
+### Sprint Görev Tahmin Mantığı
+
+> Sprintlerdeki görevlerin planlanlanması mekaniklerin içeriği, sistemlerin entegre edilmesi ve kullanılacak kaynakların araştırılmasına dayanmaktadır.
 
 ### Daily Scrum
 
@@ -31,7 +48,7 @@ Sprint boyunca geliştirilen özelliklerin görsel belgeleri `screenshots` klas�
 
 * Gün içerisindeki iletışim daha sık ve düzenli hale getirilebilir.
 
-####  Bir Sonraki Sprintte Ne Farklı Yapılacak?
+#### 🔁 Bir Sonraki Sprintte Ne Farklı Yapılacak?
 
 * Görsel destek gerektiren görevler sprintin başında önceliklendirilecektir.
 * Test süreçlerine erken aşamada başlanacaktır.
