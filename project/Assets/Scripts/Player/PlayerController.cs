@@ -1,7 +1,8 @@
 using UnityEngine;
+using Unity.Netcode; // Bu satırı ekliyoruz!
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour // MonoBehaviour yerine NetworkBehaviour oldu!
 {
     private Rigidbody _rb;
     private Animator _animator;
@@ -43,6 +44,19 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        // YALNIZCA KENDİ OYUNCUMUZ İÇİN ÇALIŞACAK KODLAR
+        // Eğer bu nesnenin sahibi ben değilsem, diğer istemcilerdeki kopyası için bu metodu çalıştırma.
+        if (!IsOwner)
+        {
+            // Eğer diğer oyuncuların kamerası veya input sistemi varsa,
+            // bunları burada kapatarak çakışmayı önleyebilirsiniz.
+            // Örneğin: GetComponent<Camera>().enabled = false;
+            // GetComponent<PlayerInput>().enabled = false; // Input System kullanıyorsanız
+            // Cursor.lockState ve Cursor.visible ayarları sadece yerel oyuncuya uygulanmalı.
+            // Bu nedenle, aşağıdaki satırları buraya değil, sadece IsOwner ise çalışacak şekilde taşıyacağız.
+            return; 
+        }
+
         _rb = GetComponent<Rigidbody>();
         _animator = GetComponentInChildren<Animator>();
 
@@ -50,6 +64,7 @@ public class PlayerController : MonoBehaviour
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
+        // Fare kilit ve görünürlük ayarları sadece yerel oyuncuya ait olmalı
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         
@@ -63,6 +78,9 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // ÖNEMLİ: Sadece bu NetworkObject'in sahibi ise hareketi işle
+        if (!IsOwner) return;
+
         // Improved ground check
         GroundCheck();
 
@@ -72,6 +90,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // GroundCheck metodu tüm istemcilerde çalışabilir, 
+    // çünkü bu görsel hata ayıklama ve zıplama kontrolü için gerekli bir bilgi.
     private void GroundCheck()
     {
         {
@@ -92,14 +112,18 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Input fonksiyonları, sadece sahibi olan istemci tarafından çağrılmalı.
+    // Bu yüzden içine IsOwner kontrolü eklemeye gerek yok, çünkü çağıran kod zaten IsOwner kontrolü yapmalı.
     public void Move(Vector3 input)
     {
+        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
         lastInput = input;
         lastInputTime = Time.time;
     }
 
     public void Jump()
     {
+        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
         if (isGrounded)
         {
             _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -111,6 +135,10 @@ public class PlayerController : MonoBehaviour
 
     private void ApplyMovement(Vector3 input)
     {
+        // Bu metot zaten FixedUpdate içinden çağrılıyor ve FixedUpdate'te IsOwner kontrolü var.
+        // Tekrar eklemeye gerek yok, ancak güvenlik için eklenebilir.
+        // if (!IsOwner) return; 
+
         float inputMagnitude = input.magnitude;
         bool isHolding = inputMagnitude > 0.1f;
 
@@ -147,12 +175,13 @@ public class PlayerController : MonoBehaviour
 
     public void Look(Vector3 lookInput)
     {
+        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
         float yawDelta = lookInput.x * mouseSensitivity;
         Quaternion deltaRotation = Quaternion.Euler(0f, yawDelta, 0f);
         _rb.MoveRotation(_rb.rotation * deltaRotation);
     }
 
-    // Debug visualization
+    // Debug visualization - Bu metot tüm istemcilerde çalışabilir.
     void OnDrawGizmos()
     {
         if (showGroundCheckGizmos && Application.isPlaying)
