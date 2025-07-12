@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Netcode; // Bu satırı ekliyoruz!
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController : NetworkBehaviour // MonoBehaviour yerine NetworkBehaviour oldu!
+public class PlayerControllerOffline : MonoBehaviour // MonoBehaviour yerine NetworkBehaviour oldu!
 {
     private Rigidbody _rb;
     private Animator _animator;
@@ -44,18 +44,7 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
 
     void Start()
     {
-        // YALNIZCA KENDİ OYUNCUMUZ İÇİN ÇALIŞACAK KODLAR
-        // Eğer bu nesnenin sahibi ben değilsem, diğer istemcilerdeki kopyası için bu metodu çalıştırma.
-        if (!IsOwner)
-        {
-            // Eğer diğer oyuncuların kamerası veya input sistemi varsa,
-            // bunları burada kapatarak çakışmayı önleyebilirsiniz.
-            // Örneğin: GetComponent<Camera>().enabled = false;
-            // GetComponent<PlayerInput>().enabled = false; // Input System kullanıyorsanız
-            // Cursor.lockState ve Cursor.visible ayarları sadece yerel oyuncuya uygulanmalı.
-            // Bu nedenle, aşağıdaki satırları buraya değil, sadece IsOwner ise çalışacak şekilde taşıyacağız.
-            return; 
-        }
+        
 
         _rb = GetComponent<Rigidbody>();
         _animator = GetComponentInChildren<Animator>();
@@ -78,8 +67,7 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
 
     void FixedUpdate()
     {
-        // ÖNEMLİ: Sadece bu NetworkObject'in sahibi ise hareketi işle
-        if (!IsOwner) return;
+        
 
         // Improved ground check
         GroundCheck();
@@ -116,14 +104,14 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
     // Bu yüzden içine IsOwner kontrolü eklemeye gerek yok, çünkü çağıran kod zaten IsOwner kontrolü yapmalı.
     public void Move(Vector3 input)
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+       
         lastInput = input;
         lastInputTime = Time.time;
     }
 
     public void Jump()
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+       
         if (isGrounded)
         {
             _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -175,7 +163,6 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
 
     public void Look(Vector3 lookInput)
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
         float yawDelta = lookInput.x * mouseSensitivity;
         Quaternion deltaRotation = Quaternion.Euler(0f, yawDelta, 0f);
         _rb.MoveRotation(_rb.rotation * deltaRotation);

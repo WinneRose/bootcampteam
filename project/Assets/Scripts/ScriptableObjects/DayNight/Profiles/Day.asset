@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2d277e4926df2b4ab3ec1f9753dde6a, type: 3}
+  m_Name: Day
+  m_EditorClassIdentifier: 
+  morningSunColor: {r: 1, g: 0.8352941, b: 0.5411765, a: 0}
+  noonSunColor: {r: 1, g: 1, b: 1, a: 0}
+  eveningSunColor: {r: 1, g: 0.6, b: 0.4, a: 0}
+  nightSunColor: {r: 0.16862746, g: 0.22745098, b: 0.33333334, a: 0}
+  sunIntensity:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  morningSkyTop: {r: 0.5294118, g: 0.80784315, b: 0.92156863, a: 1}
+  noonSkyTop: {r: 0.5294118, g: 0.84705883, b: 1, a: 1}
+  eveningSkyTop: {r: 1, g: 0.7019608, b: 0.4, a: 0}
+  nightSkyTop: {r: 0.043137256, g: 0.05882353, b: 0.18431373, a: 0}
+  morningSkyBottom: {r: 1, g: 0.92156863, b: 0.8039216, a: 1}
+  noonSkyBottom: {r: 0.9098039, g: 0.9647059, b: 1, a: 0}
+  eveningSkyBottom: {r: 1, g: 0.54901963, b: 0.4, a: 0}
+  nightSkyBottom: {r: 0, g: 0, b: 0, a: 0}
+  morningAmbient: {r: 1, g: 0.9529412, b: 0.8039216, a: 0}
+  noonAmbient: {r: 1, g: 1, b: 1, a: 0}
+  eveningAmbient: {r: 1, g: 0.85882354, b: 0.6745098, a: 0}
+  nightAmbient: {r: 0.050980393, g: 0.050980393, b: 0.12941177, a: 0}
+  dayLengthInMinutes: 0.5
+  starVisibility:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  starsDensity: 10
+  skyboxHeight: 12
+  skyboxTiling: {x: 8, y: 4}

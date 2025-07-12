@@ -109,7 +109,7 @@ MonoBehaviour:
   acceleration: 10
   runHoldTime: 2
   animationSmoothTime: 0.1
-  mouseSensitivity: 1.5
+  mouseSensitivity: 0.1
   jumpForce: 7
   groundCheckDistance: 5
   groundLayer:
