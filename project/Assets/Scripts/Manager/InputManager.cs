@@ -4,13 +4,14 @@ using UnityEngine.InputSystem;
 public class InputManager : MonoBehaviour
 {
    public PlayerController playerController;
-   public InputAction _moveAction, _jumpAction, _lookAction;
+   public InputAction _moveAction, _jumpAction, _lookAction, _interactAction;
 
    private void Start()
    {
       _moveAction = InputSystem.actions.FindAction("Move");
       _jumpAction  = InputSystem.actions.FindAction("Jump");
       _lookAction = InputSystem.actions.FindAction("Look");
+      _interactAction = InputSystem.actions.FindAction("Interact");
       
       Cursor.visible = false;
    }
@@ -28,6 +29,11 @@ public class InputManager : MonoBehaviour
       {
          playerController.Jump();
          Debug.unityLogger.Log("Jump");
+      }
+
+      if (_interactAction.triggered)
+      {
+         Debug.Log("Interact");
       }
    }
 }
