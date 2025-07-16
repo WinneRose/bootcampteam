@@ -8,20 +8,37 @@ public class AbilityUI : MonoBehaviour
     public Slider abilityBar;
     public TextMeshProUGUI abilityText;
     public Image abilityBarFill;
-    public TextMeshProUGUI zoneInfoText; // Shows current zone progress
-    public GameObject chargingIndicator; // Shows when charging
+    public TextMeshProUGUI zoneInfoText;
+    public GameObject chargingIndicator;
     
     [Header("Visual Settings")]
     public Color normalColor = Color.blue;
     public Color chargingColor = Color.yellow;
     public Color readyColor = Color.green;
     public Color insufficientColor = Color.red;
+    public Color maxedOutColor = Color.orange;
     
     [Header("Animation")]
     public float animationSpeed = 2f;
+    public float pulseIntensity = 0.3f;
+    
+    [Header("Auto Hide Settings")]
+    public bool autoHideUI = true;
+    public float hideDelay = 3f;
     
     private AbilitySystem abilitySystem;
     private bool isInitialized = false;
+    private bool isCurrentlyCharging = false;
+    private float lastActivityTime = 0f;
+    private CanvasGroup canvasGroup;
+    
+    private void Awake()
+    {
+        // Get or add CanvasGroup for fading
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+    }
     
     public void Initialize(AbilitySystem system)
     {
@@ -39,16 +56,19 @@ public class AbilityUI : MonoBehaviour
             chargingIndicator.SetActive(false);
         
         UpdateAbilityBar(0f, system.GetMaxAbilityPoints());
+        lastActivityTime = Time.time;
     }
     
     public void UpdateAbilityBar(float currentPoints, float maxPoints)
     {
         if (!isInitialized) return;
         
-        // Update slider value
+        lastActivityTime = Time.time;
+        
+        // Update slider value smoothly
         if (abilityBar != null)
         {
-            abilityBar.value = currentPoints;
+            abilityBar.value = Mathf.Lerp(abilityBar.value, currentPoints, Time.deltaTime * animationSpeed);
         }
         
         // Update text
@@ -63,18 +83,14 @@ public class AbilityUI : MonoBehaviour
     
     public void UpdateChargingState(bool isCharging)
     {
+        isCurrentlyCharging = isCharging;
+        
+        if (isCharging)
+            lastActivityTime = Time.time;
+        
         if (chargingIndicator != null)
         {
             chargingIndicator.SetActive(isCharging);
-        }
-        
-        // Add pulsing effect when charging
-        if (isCharging && abilityBarFill != null)
-        {
-            float pulse = Mathf.Sin(Time.time * animationSpeed) * 0.3f + 0.7f;
-            Color chargingColorPulsed = chargingColor;
-            chargingColorPulsed.a = pulse;
-            abilityBarFill.color = chargingColorPulsed;
         }
     }
     
@@ -84,8 +100,17 @@ public class AbilityUI : MonoBehaviour
         {
             if (inZone)
             {
-                zoneInfoText.text = $"Zone: {currentZonePoints:F0}/{maxZonePoints:F0}";
-                zoneInfoText.color = currentZonePoints >= maxZonePoints ? insufficientColor : chargingColor;
+                if (currentZonePoints >= maxZonePoints)
+                {
+                    zoneInfoText.text = $"Zone: MAXED ({currentZonePoints:F0}/{maxZonePoints:F0})";
+                    zoneInfoText.color = maxedOutColor;
+                }
+                else
+                {
+                    zoneInfoText.text = $"Zone: {currentZonePoints:F0}/{maxZonePoints:F0}";
+                    zoneInfoText.color = chargingColor;
+                }
+                lastActivityTime = Time.time;
             }
             else
             {
@@ -97,55 +122,114 @@ public class AbilityUI : MonoBehaviour
     
     private void UpdateBarColor(float currentPoints, float maxPoints)
     {
-        if (abilityBarFill == null) return;
+        if (abilityBarFill == null || abilitySystem == null) return;
         
-        Color targetColor;
+        Color targetColor = GetTargetColor(currentPoints);
         
-        if (abilitySystem != null && abilitySystem.IsInAbilityZone() && Input.GetMouseButton(1))
+        // Apply pulsing effect when charging
+        if (isCurrentlyCharging)
         {
-            // Charging with right click hold
-            targetColor = chargingColor;
-        }
-        else if (abilitySystem != null && abilitySystem.IsInAbilityZone())
-        {
-            // In zone but not charging
-            if (abilitySystem.GetCurrentZonePoints() >= abilitySystem.GetMaxPointsPerZone())
-            {
-                targetColor = insufficientColor; // Zone maxed out
-            }
-            else
-            {
-                targetColor = normalColor; // Can charge
-            }
-        }
-        else if (currentPoints >= abilitySystem.consumeAmount)
-        {
-            // Ready to use
-            targetColor = readyColor;
-        }
-        else if (currentPoints > 0)
-        {
-            // Has some points but not enough
-            targetColor = insufficientColor;
+            float pulse = Mathf.Sin(Time.time * animationSpeed) * pulseIntensity + (1f - pulseIntensity);
+            Color pulsedColor = targetColor * pulse;
+            pulsedColor.a = targetColor.a; // Preserve alpha
+            abilityBarFill.color = pulsedColor;
         }
         else
         {
-            // Empty
-            targetColor = normalColor;
+            // Smooth color transition when not charging
+            abilityBarFill.color = Color.Lerp(abilityBarFill.color, targetColor, Time.deltaTime * animationSpeed);
         }
+    }
+    
+    private Color GetTargetColor(float currentPoints)
+    {
+        if (abilitySystem == null) return normalColor;
         
-        abilityBarFill.color = Color.Lerp(abilityBarFill.color, targetColor, Time.deltaTime * animationSpeed);
+        // Priority order for color determination
+        if (isCurrentlyCharging && abilitySystem.IsInAbilityZone())
+        {
+            return chargingColor;
+        }
+        else if (abilitySystem.IsInAbilityZone())
+        {
+            if (abilitySystem.GetCurrentZonePoints() >= abilitySystem.GetMaxPointsPerZone())
+            {
+                return maxedOutColor; // Zone maxed out
+            }
+            else
+            {
+                return normalColor; // Can charge
+            }
+        }
+        else if (abilitySystem.CanUseAbility())
+        {
+            return readyColor; // Ready to use
+        }
+        else if (currentPoints > 0)
+        {
+            return insufficientColor; // Has some points but not enough
+        }
+        else
+        {
+            return normalColor; // Empty
+        }
     }
     
     void Update()
     {
         if (!isInitialized) return;
         
-        // Show/hide UI based on ability zone
-        if (abilitySystem != null)
+        HandleVisibility();
+    }
+    
+    private void HandleVisibility()
+    {
+        if (abilitySystem == null || canvasGroup == null) return;
+        
+        bool shouldShow = ShouldShowUI();
+        float targetAlpha = shouldShow ? 1f : 0f;
+        
+        // Smooth fade in/out
+        canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, targetAlpha, Time.deltaTime * animationSpeed);
+        
+        // Disable interaction when fully transparent
+        canvasGroup.interactable = canvasGroup.alpha > 0.1f;
+        canvasGroup.blocksRaycasts = canvasGroup.alpha > 0.1f;
+    }
+    
+    private bool ShouldShowUI()
+    {
+        if (!autoHideUI) return true;
+        
+        // Always show when in ability zone or charging
+        if (abilitySystem.IsInAbilityZone() || abilitySystem.IsCharging())
+            return true;
+        
+        // Show if has ability points
+        if (abilitySystem.GetCurrentAbilityPoints() > 0)
+            return true;
+        
+        // Show for a short time after activity
+        if (Time.time - lastActivityTime < hideDelay)
+            return true;
+        
+        return false;
+    }
+    
+    // Public methods for external control
+    public void ForceShow()
+    {
+        lastActivityTime = Time.time;
+    }
+    
+    public void SetAutoHide(bool enabled)
+    {
+        autoHideUI = enabled;
+        if (!enabled)
         {
-            bool shouldShow = abilitySystem.IsInAbilityZone() || abilitySystem.GetCurrentAbilityPoints() > 0;
-            gameObject.SetActive(shouldShow);
+            canvasGroup.alpha = 1f;
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
         }
     }
 }
