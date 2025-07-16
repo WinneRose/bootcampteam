@@ -15,9 +15,10 @@ GameObject:
   - component: {fileID: 6254493315613248790}
   - component: {fileID: 6144082901526161609}
   - component: {fileID: 8842599984154899014}
+  - component: {fileID: 8041579729029174452}
   m_Layer: 0
   m_Name: Dew
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -37,6 +38,7 @@ Transform:
   m_Children:
   - {fileID: 568684431899919951}
   - {fileID: 5096646551185025764}
+  - {fileID: 2096702994583179532}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &6007407610516635711
@@ -79,13 +81,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 232445695
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 232445695
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -201,6 +203,59 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   TransitionStateInfoList: []
   m_Animator: {fileID: 5837918211727514677}
+--- !u!114 &8041579729029174452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1694985764148912473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08c5a41e219ac354f93ebecbd70ba657, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  maxAbilityPoints: 20
+  maxPointsPerZone: 20
+  chargeRate: 1
+  consumeAmount: 20
+  projectilePrefab: {fileID: 1260038920493039900, guid: cecab89964e8d9547ba21d48c51a0273, type: 3}
+  projectileSpawnPoint: {fileID: 2096702994583179532}
+  projectileSpeed: 20
+  projectileLifetime: 5
+  abilityUI: {fileID: 1120521124060207417, guid: cc93257fb87dfe74e91afb8b66700aa3, type: 3}
+--- !u!1 &5008256641021830043
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2096702994583179532}
+  m_Layer: 0
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2096702994583179532
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5008256641021830043}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.009560585, y: 0.438, z: 0.22556353}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4217241717013096954}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8270168040542728975
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,6 +324,15 @@ MonoBehaviour:
     m_Type: 0
     m_ExpectedControlType: 
     m_Id: 28df2207-5c4f-4a8b-b950-7c7f7b2b7149
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  _interactAction:
+    m_Name: Interact
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: aaa5ea79-ba96-4989-b60d-590511f91a1a
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings: []
