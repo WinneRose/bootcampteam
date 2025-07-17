@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Dew
+  - Water
   layers:
   - Default
   - TransparentFX
