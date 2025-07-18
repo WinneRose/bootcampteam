@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Dew
   - Water
+  - Bridge
   layers:
   - Default
   - TransparentFX

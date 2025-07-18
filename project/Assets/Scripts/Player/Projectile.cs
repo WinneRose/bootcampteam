@@ -46,23 +46,28 @@ public class Projectile : MonoBehaviour
         // Auto-destroy after lifetime
         Destroy(gameObject, lifetime);
     }
-    
+
     private void OnCollisionEnter(Collision collision)
     {
         if (hasHit) return;
-        
+
         // Check if we hit a valid target
         if (((1 << collision.gameObject.layer) & hitLayers) != 0)
         {
             hasHit = true;
-            
+
             // Handle hit
             HandleHit(collision);
-            
+
             if (destroyOnHit)
             {
                 DestroyProjectile();
             }
+        }
+        if (collision.gameObject.CompareTag("Bridge"))
+        {
+            collision.gameObject.transform.GetChild(0).gameObject.SetActive(true);
+            Destroy(gameObject);
         }
     }
     
