@@ -408,8 +408,8 @@ public class AbilitySystem : NetworkBehaviour
     {
         if (abilityUI != null)
         {
-            abilityUI.UpdateAbilityBar(currentAbilityPoints.Value, maxAbilityPoints);
-            abilityUI.UpdateZoneInfo(currentZonePoints.Value, maxPointsPerZone, isInAbilityZone.Value);
+            //abilityUI.UpdateAbilityBar(currentAbilityPoints.Value, maxAbilityPoints);
+            //abilityUI.UpdateZoneInfo(currentZonePoints.Value, maxPointsPerZone, isInAbilityZone.Value);
             abilityUI.UpdateChargingState(isCharging.Value && isInAbilityZone.Value);
         }
     }

@@ -1,13 +1,16 @@
-
 using UnityEngine;
 using Unity.Netcode;
+
 public class PlayerNetworkManager : NetworkBehaviour
 {
     [Header("Component References")]
     [SerializeField] private PlayerController playerController;
-    [SerializeField] private AbilitySystem abilitySystem;
     [SerializeField] private InputManager inputManager;
     [SerializeField] private AbilityUI abilityUI;
+    
+    [Header("Character-Specific Ability Systems")]
+    [SerializeField] private DewAbilitySystem dewAbilitySystem;
+    [SerializeField] private SolAbilitySystem solAbilitySystem;
     
     [Header("Auto-Setup")]
     public bool autoFindComponents = true;
@@ -15,6 +18,9 @@ public class PlayerNetworkManager : NetworkBehaviour
     
     [Header("UI Setup")]
     public Canvas playerCanvas; // For UI that should be specific to this player
+    
+    // Current ability system reference (whichever one exists)
+    private MonoBehaviour currentAbilitySystem;
     
     public override void OnNetworkSpawn()
     {
@@ -53,12 +59,32 @@ public class PlayerNetworkManager : NetworkBehaviour
                 playerController = GetComponentInChildren<PlayerController>();
         }
         
-        // Find AbilitySystem
-        if (abilitySystem == null)
+        // Find DewAbilitySystem
+        if (dewAbilitySystem == null)
         {
-            abilitySystem = GetComponent<AbilitySystem>();
-            if (abilitySystem == null)
-                abilitySystem = GetComponentInChildren<AbilitySystem>();
+            dewAbilitySystem = GetComponent<DewAbilitySystem>();
+            if (dewAbilitySystem == null)
+                dewAbilitySystem = GetComponentInChildren<DewAbilitySystem>();
+        }
+        
+        // Find SolAbilitySystem
+        if (solAbilitySystem == null)
+        {
+            solAbilitySystem = GetComponent<SolAbilitySystem>();
+            if (solAbilitySystem == null)
+                solAbilitySystem = GetComponentInChildren<SolAbilitySystem>();
+        }
+        
+        // Set current ability system
+        if (dewAbilitySystem != null)
+        {
+            currentAbilitySystem = dewAbilitySystem;
+            Debug.Log($"Found DewAbilitySystem on {dewAbilitySystem.gameObject.name}");
+        }
+        else if (solAbilitySystem != null)
+        {
+            currentAbilitySystem = solAbilitySystem;
+            Debug.Log($"Found SolAbilitySystem on {solAbilitySystem.gameObject.name}");
         }
         
         // Find InputManager
@@ -93,14 +119,31 @@ public class PlayerNetworkManager : NetworkBehaviour
         if (playerController == null)
             Debug.LogWarning($"PlayerController not found on {gameObject.name}");
         
-        if (abilitySystem == null)
-            Debug.LogWarning($"AbilitySystem not found on {gameObject.name}");
+        if (currentAbilitySystem == null)
+            Debug.LogWarning($"No AbilitySystem (Dew or Sol) found on {gameObject.name}");
         
         if (inputManager == null)
             Debug.LogWarning($"InputManager not found on {gameObject.name}");
         
         if (abilityUI == null)
             Debug.LogWarning($"AbilityUI not found on {gameObject.name}");
+            
+        // Validate DewAbilitySystem specific components
+        if (dewAbilitySystem != null)
+        {
+            if (dewAbilitySystem.projectilePrefab == null)
+                Debug.LogWarning($"DewAbilitySystem on {gameObject.name} is missing projectilePrefab");
+            
+            if (dewAbilitySystem.projectileSpawnPoint == null)
+                Debug.LogWarning($"DewAbilitySystem on {gameObject.name} is missing projectileSpawnPoint");
+                
+            // Check for camera reference
+            Camera playerCamera = Camera.main;
+            if (playerCamera == null)
+                playerCamera = GetComponentInChildren<Camera>();
+            if (playerCamera == null)
+                Debug.LogWarning($"No camera found for DewAbilitySystem projectile direction on {gameObject.name}");
+        }
     }
     
     private void LinkComponents()
@@ -108,34 +151,34 @@ public class PlayerNetworkManager : NetworkBehaviour
         // Link InputManager to other components
         if (inputManager != null)
         {
+            // Set player controller reference
             if (playerController != null)
                 inputManager.playerController = playerController;
             
-            if (abilitySystem != null)
-                inputManager.abilitySystem = abilitySystem;
+            // Set ability system references in InputManager
+            if (dewAbilitySystem != null)
+                inputManager.SetDewAbilitySystem(dewAbilitySystem);
+            else if (solAbilitySystem != null)
+                inputManager.SetSolAbilitySystem(solAbilitySystem);
             
-            // Refresh references in case InputManager has auto-find enabled
-            var inputMgr = inputManager.GetComponent<InputManager>();
-            if (inputMgr != null)
-            {
-                inputMgr.SetReferences(playerController, abilitySystem);
-            }
+            Debug.Log($"Linked InputManager to components");
         }
         
-        // Link AbilitySystem to UI (with additional safety checks)
-        if (abilitySystem != null && abilityUI != null)
+        // Link AbilitySystem to UI
+        if (currentAbilitySystem != null && abilityUI != null)
         {
-            abilitySystem.abilityUI = abilityUI;
-            
-            // Use the new SetAbilityUI method if available
-            abilitySystem.SetAbilityUI(abilityUI);
-            
-            Debug.Log($"Linked AbilitySystem to AbilityUI: {abilityUI.gameObject.name}");
-        }
-        else if (abilitySystem != null && abilityUI == null)
-        {
-            // Try to refresh UI if AbilitySystem exists but UI doesn't
-            abilitySystem.RefreshUI();
+            if (dewAbilitySystem != null)
+            {
+                dewAbilitySystem.abilityUI = abilityUI;
+                abilityUI.Initialize(dewAbilitySystem);
+                Debug.Log($"Linked DewAbilitySystem to AbilityUI: {abilityUI.gameObject.name}");
+            }
+            else if (solAbilitySystem != null)
+            {
+                solAbilitySystem.abilityUI = abilityUI;
+                abilityUI.Initialize(solAbilitySystem);
+                Debug.Log($"Linked SolAbilitySystem to AbilityUI: {abilityUI.gameObject.name}");
+            }
         }
     }
     
@@ -160,6 +203,25 @@ public class PlayerNetworkManager : NetworkBehaviour
         if (abilityUI != null)
         {
             abilityUI.gameObject.SetActive(true);
+            
+            // Force UI refresh based on character type
+            if (dewAbilitySystem != null)
+            {
+                // Update Dew UI with current values
+                abilityUI.UpdateWaterInfo(dewAbilitySystem.GetCurrentWaterCapacity(), dewAbilitySystem.GetMaxWaterCapacity());
+                abilityUI.UpdateWaterChargingState(dewAbilitySystem.IsCharging());
+                abilityUI.RefreshWaterDistance();
+            }
+            else if (solAbilitySystem != null)
+            {
+                // Update Sol UI with current values
+                abilityUI.UpdateSolarInfo(
+                    solAbilitySystem.GetCurrentSolarEnergy(),
+                    solAbilitySystem.GetMaxSolarEnergy(),
+                    solAbilitySystem.GetIsInSunlight(),
+                    solAbilitySystem.GetTimeOfDay()
+                );
+            }
         }
         
         // Setup player canvas for owner
@@ -238,9 +300,17 @@ public class PlayerNetworkManager : NetworkBehaviour
         LinkComponents();
     }
     
-    public void SetAbilitySystem(AbilitySystem abilities)
+    public void SetDewAbilitySystem(DewAbilitySystem dewSystem)
     {
-        abilitySystem = abilities;
+        dewAbilitySystem = dewSystem;
+        currentAbilitySystem = dewSystem;
+        LinkComponents();
+    }
+    
+    public void SetSolAbilitySystem(SolAbilitySystem solSystem)
+    {
+        solAbilitySystem = solSystem;
+        currentAbilitySystem = solSystem;
         LinkComponents();
     }
     
@@ -258,9 +328,31 @@ public class PlayerNetworkManager : NetworkBehaviour
     
     // Getters for external access
     public PlayerController GetPlayerController() => playerController;
-    public AbilitySystem GetAbilitySystem() => abilitySystem;
+    public DewAbilitySystem GetDewAbilitySystem() => dewAbilitySystem;
+    public SolAbilitySystem GetSolAbilitySystem() => solAbilitySystem;
+    public MonoBehaviour GetCurrentAbilitySystem() => currentAbilitySystem;
     public InputManager GetInputManager() => inputManager;
     public AbilityUI GetAbilityUI() => abilityUI;
+    
+    // Helper methods
+    public bool IsDewCharacter() => dewAbilitySystem != null;
+    public bool IsSolCharacter() => solAbilitySystem != null;
+    public string GetCharacterType() => IsDewCharacter() ? "Dew" : IsSolCharacter() ? "Sol" : "Unknown";
+    
+    // Water source management for Dew characters
+    public string GetWaterSourceStatus()
+    {
+        if (dewAbilitySystem == null) return "Not a Dew character";
+        
+        return dewAbilitySystem.GetWaterStatusString();
+    }
+    
+    public WaterSourceInfo[] GetAllWaterSources()
+    {
+        if (dewAbilitySystem == null) return new WaterSourceInfo[0];
+        
+        return dewAbilitySystem.GetAllWaterSourcesInfo();
+    }
     
     // Debug method to check all references
     [ContextMenu("Debug Component Status")]
@@ -268,20 +360,136 @@ public class PlayerNetworkManager : NetworkBehaviour
     {
         Debug.Log($"=== Player Component Status for {gameObject.name} ===");
         Debug.Log($"IsOwner: {IsOwner}");
+        Debug.Log($"Character Type: {GetCharacterType()}");
         Debug.Log($"PlayerController: {(playerController != null ? "✓" : "✗")}");
-        Debug.Log($"AbilitySystem: {(abilitySystem != null ? "✓" : "✗")}");
+        Debug.Log($"DewAbilitySystem: {(dewAbilitySystem != null ? "✓" : "✗")}");
+        Debug.Log($"SolAbilitySystem: {(solAbilitySystem != null ? "✓" : "✗")}");
         Debug.Log($"InputManager: {(inputManager != null ? "✓" : "✗")}");
         Debug.Log($"AbilityUI: {(abilityUI != null ? "✓" : "✗")}");
         Debug.Log($"PlayerCanvas: {(playerCanvas != null ? "✓" : "✗")}");
         
-        if (inputManager != null && abilitySystem != null)
+        // Debug DewAbilitySystem specific components
+        if (dewAbilitySystem != null)
         {
-            Debug.Log($"InputManager -> AbilitySystem link: {(inputManager.abilitySystem == abilitySystem ? "✓" : "✗")}");
+            Debug.Log($"--- Dew System Status ---");
+            Debug.Log($"Water Capacity: {dewAbilitySystem.GetCurrentWaterCapacity():F1}/{dewAbilitySystem.GetMaxWaterCapacity()}");
+            Debug.Log($"Can Use Ability: {dewAbilitySystem.CanUseAbility()}");
+            Debug.Log($"Is Charging: {dewAbilitySystem.IsCharging()}");
+            Debug.Log($"In Water Zone: {dewAbilitySystem.IsInWaterZone()}");
+            Debug.Log($"Projectile Prefab: {(dewAbilitySystem.projectilePrefab != null ? "✓" : "✗")}");
+            Debug.Log($"Spawn Point: {(dewAbilitySystem.projectileSpawnPoint != null ? "✓" : "✗")}");
+            Debug.Log($"Water Status: {GetWaterSourceStatus()}");
         }
         
-        if (abilitySystem != null && abilityUI != null)
+        if (inputManager != null && currentAbilitySystem != null)
         {
-            Debug.Log($"AbilitySystem -> AbilityUI link: {(abilitySystem.abilityUI == abilityUI ? "✓" : "✗")}");
+            bool inputLinked = false;
+            if (dewAbilitySystem != null)
+                inputLinked = inputManager.HasDewAbilities();
+            else if (solAbilitySystem != null)
+                inputLinked = inputManager.HasSolAbilities();
+                
+            Debug.Log($"InputManager -> AbilitySystem link: {(inputLinked ? "✓" : "✗")}");
+        }
+        
+        if (currentAbilitySystem != null && abilityUI != null)
+        {
+            bool uiLinked = false;
+            if (dewAbilitySystem != null)
+                uiLinked = dewAbilitySystem.abilityUI == abilityUI;
+            else if (solAbilitySystem != null)
+                uiLinked = solAbilitySystem.abilityUI == abilityUI;
+                
+            Debug.Log($"AbilitySystem -> AbilityUI link: {(uiLinked ? "✓" : "✗")}");
+            
+            // Debug UI state
+            if (uiLinked && abilityUI.IsInitialized())
+            {
+                Debug.Log($"UI Character Type: {(abilityUI.IsDewCharacter() ? "Dew" : abilityUI.IsSolCharacter() ? "Sol" : "Unknown")}");
+            }
+        }
+    }
+    
+    // Debug water sources specifically
+    [ContextMenu("Debug Water Sources")]
+    public void DebugWaterSources()
+    {
+        if (dewAbilitySystem == null)
+        {
+            Debug.Log("Not a Dew character - no water sources to debug");
+            return;
+        }
+        
+        WaterSourceInfo[] waterSources = GetAllWaterSources();
+        Debug.Log($"=== Water Sources Debug for {gameObject.name} ===");
+        Debug.Log($"Found {waterSources.Length} water sources");
+        Debug.Log($"Collection Range: {dewAbilitySystem.waterCollectionRange}m");
+        Debug.Log($"Detection Range: {dewAbilitySystem.maxWaterDetectionRange}m");
+        
+        for (int i = 0; i < waterSources.Length; i++)
+        {
+            var source = waterSources[i];
+            string status = source.inCollectionRange ? "COLLECTION RANGE" : 
+                           source.inDetectionRange ? "DETECTION RANGE" : "OUT OF RANGE";
+            Debug.Log($"{i + 1}. {source.name} - {source.distance:F1}m ({status})");
+        }
+        
+        Debug.Log($"Current Status: {GetWaterSourceStatus()}");
+    }
+    
+    // Context menu for easy testing
+    [ContextMenu("Force Setup Components")]
+    public void ForceSetupComponents()
+    {
+        SetupPlayerComponents();
+    }
+    
+    [ContextMenu("Refresh All References")]
+    public void RefreshAllReferences()
+    {
+        // Force re-find all components
+        dewAbilitySystem = null;
+        solAbilitySystem = null;
+        currentAbilitySystem = null;
+        playerController = null;
+        inputManager = null;
+        abilityUI = null;
+        playerCanvas = null;
+        
+        // Re-setup everything
+        SetupPlayerComponents();
+    }
+    
+    [ContextMenu("Test Dew Abilities")]
+    public void TestDewAbilities()
+    {
+        if (dewAbilitySystem == null)
+        {
+            Debug.Log("No DewAbilitySystem found");
+            return;
+        }
+        
+        if (!IsOwner)
+        {
+            Debug.Log("Cannot test abilities - not the owner");
+            return;
+        }
+        
+        Debug.Log("=== Testing Dew Abilities ===");
+        Debug.Log($"Adding water...");
+        dewAbilitySystem.AddWater(20f);
+        
+        Debug.Log($"Water after adding: {dewAbilitySystem.GetCurrentWaterCapacity():F1}");
+        
+        if (dewAbilitySystem.CanUseAbility())
+        {
+            Debug.Log("Using ability...");
+            dewAbilitySystem.UseAbility();
+            Debug.Log($"Water after using ability: {dewAbilitySystem.GetCurrentWaterCapacity():F1}");
+        }
+        else
+        {
+            Debug.Log("Cannot use ability - not enough water");
         }
     }
 }

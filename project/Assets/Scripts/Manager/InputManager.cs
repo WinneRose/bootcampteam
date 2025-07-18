@@ -6,7 +6,6 @@ public class InputManager : NetworkBehaviour
 {
     [Header("References")]
     public PlayerController playerController;
-    public AbilitySystem abilitySystem;
     
     [Header("Auto-Find Settings")]
     public bool autoFindReferences = true;
@@ -20,6 +19,11 @@ public class InputManager : NetworkBehaviour
     public InputAction interactAction;
     public InputAction chargeAbilityAction;
     public InputAction useAbilityAction;
+    
+    // Ability systems (support for both character types)
+    private DewAbilitySystem dewAbilitySystem;
+    private SolAbilitySystem solAbilitySystem;
+    private MonoBehaviour currentAbilitySystem; // Generic reference
     
     // Input state tracking
     private bool wasChargingLastFrame = false;
@@ -44,7 +48,7 @@ public class InputManager : NetworkBehaviour
         if (autoFindReferences)
         {
             FindPlayerController();
-            FindAbilitySystem();
+            FindAbilitySystems();
         }
         
         ValidateReferences();
@@ -75,28 +79,32 @@ public class InputManager : NetworkBehaviour
         }
     }
     
-    private void FindAbilitySystem()
+    private void FindAbilitySystems()
     {
-        if (abilitySystem != null) return;
+        // Try to find Dew ability system
+        dewAbilitySystem = GetComponent<DewAbilitySystem>();
+        if (dewAbilitySystem == null && searchInParent)
+            dewAbilitySystem = GetComponentInParent<DewAbilitySystem>();
+        if (dewAbilitySystem == null && searchInChildren)
+            dewAbilitySystem = GetComponentInChildren<DewAbilitySystem>();
         
-        // Try to find on the same GameObject first
-        abilitySystem = GetComponent<AbilitySystem>();
+        // Try to find Sol ability system
+        solAbilitySystem = GetComponent<SolAbilitySystem>();
+        if (solAbilitySystem == null && searchInParent)
+            solAbilitySystem = GetComponentInParent<SolAbilitySystem>();
+        if (solAbilitySystem == null && searchInChildren)
+            solAbilitySystem = GetComponentInChildren<SolAbilitySystem>();
         
-        if (abilitySystem == null && searchInParent)
+        // Set current ability system
+        if (dewAbilitySystem != null)
         {
-            // Try to find in parent
-            abilitySystem = GetComponentInParent<AbilitySystem>();
+            currentAbilitySystem = dewAbilitySystem;
+            Debug.Log($"Found DewAbilitySystem on {dewAbilitySystem.gameObject.name}");
         }
-        
-        if (abilitySystem == null && searchInChildren)
+        else if (solAbilitySystem != null)
         {
-            // Try to find in children
-            abilitySystem = GetComponentInChildren<AbilitySystem>();
-        }
-        
-        if (abilitySystem != null)
-        {
-            Debug.Log($"Found AbilitySystem on {abilitySystem.gameObject.name}");
+            currentAbilitySystem = solAbilitySystem;
+            Debug.Log($"Found SolAbilitySystem on {solAbilitySystem.gameObject.name}");
         }
     }
     
@@ -107,9 +115,9 @@ public class InputManager : NetworkBehaviour
             Debug.LogError($"PlayerController not found on {gameObject.name}! Please assign manually or enable auto-find.");
         }
         
-        if (abilitySystem == null)
+        if (currentAbilitySystem == null)
         {
-            Debug.LogError($"AbilitySystem not found on {gameObject.name}! Please assign manually or enable auto-find.");
+            Debug.LogError($"No AbilitySystem found on {gameObject.name}! Please assign DewAbilitySystem or SolAbilitySystem.");
         }
     }
     
@@ -182,7 +190,7 @@ public class InputManager : NetworkBehaviour
     
     private void HandleAbilityInput()
     {
-        if (abilitySystem == null) return;
+        if (currentAbilitySystem == null) return;
         
         // Handle charging ability
         if (chargeAbilityAction != null)
@@ -192,13 +200,21 @@ public class InputManager : NetworkBehaviour
             // Start charging when button is first pressed
             if (isChargingNow && !wasChargingLastFrame)
             {
-                abilitySystem.StartCharging();
+                if (dewAbilitySystem != null)
+                    dewAbilitySystem.StartCharging();
+                else if (solAbilitySystem != null)
+                    solAbilitySystem.StartCharging();
+                    
                 Debug.Log("Started charging ability input");
             }
             // Stop charging when button is released
             else if (!isChargingNow && wasChargingLastFrame)
             {
-                abilitySystem.StopCharging();
+                if (dewAbilitySystem != null)
+                    dewAbilitySystem.StopCharging();
+                else if (solAbilitySystem != null)
+                    solAbilitySystem.StopCharging();
+                    
                 Debug.Log("Stopped charging ability input");
             }
             
@@ -208,7 +224,11 @@ public class InputManager : NetworkBehaviour
         // Handle using ability
         if (useAbilityAction != null && useAbilityAction.triggered)
         {
-            abilitySystem.UseAbility();
+            if (dewAbilitySystem != null)
+                dewAbilitySystem.UseAbility();
+            else if (solAbilitySystem != null)
+                solAbilitySystem.UseAbility();
+                
             Debug.Log("Use ability triggered");
         }
     }
@@ -224,12 +244,18 @@ public class InputManager : NetworkBehaviour
     }
     
     // Public method to manually set references (useful for runtime assignment)
-    public void SetReferences(PlayerController controller, AbilitySystem abilities)
+    public void SetDewAbilitySystem(DewAbilitySystem dewSystem)
     {
-        playerController = controller;
-        abilitySystem = abilities;
-        
-        Debug.Log("References manually set for InputManager");
+        dewAbilitySystem = dewSystem;
+        currentAbilitySystem = dewSystem;
+        Debug.Log("DewAbilitySystem manually set for InputManager");
+    }
+    
+    public void SetSolAbilitySystem(SolAbilitySystem solSystem)
+    {
+        solAbilitySystem = solSystem;
+        currentAbilitySystem = solSystem;
+        Debug.Log("SolAbilitySystem manually set for InputManager");
     }
     
     // Public method to refresh references (useful if components are added later)
@@ -238,10 +264,16 @@ public class InputManager : NetworkBehaviour
         if (autoFindReferences)
         {
             FindPlayerController();
-            FindAbilitySystem();
+            FindAbilitySystems();
             ValidateReferences();
         }
     }
+    
+    // Public getters
+    public bool HasDewAbilities() => dewAbilitySystem != null;
+    public bool HasSolAbilities() => solAbilitySystem != null;
+    public DewAbilitySystem GetDewAbilitySystem() => dewAbilitySystem;
+    public SolAbilitySystem GetSolAbilitySystem() => solAbilitySystem;
     
     public override void OnNetworkDespawn()
     {
