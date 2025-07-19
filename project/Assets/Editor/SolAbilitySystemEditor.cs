@@ -57,6 +57,7 @@ public class SolAbilitySystemEditor : Editor
             EditorGUILayout.LabelField("Solar Blast", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("Can Use Blast:", solSystem.CanUseAbility() ? "✅ Ready" : "❌ Not Enough Energy");
             EditorGUILayout.LabelField("Energy Cost:", $"{solSystem.blastCost:F0} energy per blast");
+            EditorGUILayout.LabelField("Blast Damage:", $"{solSystem.blastDamage:F0} damage per hit");
             
             if (solSystem.CanUseAbility())
             {

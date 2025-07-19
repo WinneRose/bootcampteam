@@ -1,8 +1,8 @@
 using UnityEngine;
-using Unity.Netcode; // Bu satırı ekliyoruz!
+using Unity.Netcode;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController : NetworkBehaviour // MonoBehaviour yerine NetworkBehaviour oldu!
+public class PlayerController : NetworkBehaviour
 {
     private Rigidbody _rb;
     private Animator _animator;
@@ -27,7 +27,7 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
 
     [Header("Jump Settings")]
     public float jumpForce = 7f;
-    public float groundCheckDistance = 0.1f;
+    public float groundCheckDistance = 0.3f; // INCREASED from 0.1f
     public LayerMask groundLayer = -1; // Default to everything
     [SerializeField] private bool isGrounded = false;
     
@@ -35,6 +35,7 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
     [Header("Ground Check Debug")]
     public bool showGroundCheckGizmos = true;
     private Vector3 groundCheckOrigin;
+    private Vector3 sphereCheckPosition; // Store for gizmo drawing
     private float capsuleRadius = 0.5f; // Adjust based on your character's collider
 
     // Anti-flicker input caching
@@ -44,6 +45,13 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
 
     void Start()
     {
+        // Get capsule radius FIRST for all clients (needed for ground check visualization)
+        CapsuleCollider capsule = GetComponent<CapsuleCollider>();
+        if (capsule != null)
+        {
+            capsuleRadius = capsule.radius;
+        }
+
         // YALNIZCA KENDİ OYUNCUMUZ İÇİN ÇALIŞACAK KODLAR
         // Eğer bu nesnenin sahibi ben değilsem, diğer istemcilerdeki kopyası için bu metodu çalıştırma.
         if (!IsOwner)
@@ -67,22 +75,15 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
         // Fare kilit ve görünürlük ayarları sadece yerel oyuncuya ait olmalı
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        
-        // Get capsule radius if available
-        CapsuleCollider capsule = GetComponent<CapsuleCollider>();
-        if (capsule != null)
-        {
-            capsuleRadius = capsule.radius;
-        }
     }
 
     void FixedUpdate()
     {
+        // Ground check runs for ALL clients (each calculates locally)
+        GroundCheck();
+
         // ÖNEMLİ: Sadece bu NetworkObject'in sahibi ise hareketi işle
         if (!IsOwner) return;
-
-        // Improved ground check
-        GroundCheck();
 
         if (Time.fixedTime - lastInputTime < inputStabilityTime)
         {
@@ -94,21 +95,46 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
     // çünkü bu görsel hata ayıklama ve zıplama kontrolü için gerekli bir bilgi.
     private void GroundCheck()
     {
+        groundCheckOrigin = transform.position;
+    
+        // FIXED: Better sphere position calculation
+        // Calculate the bottom of the capsule collider
+        float capsuleBottom = capsuleRadius; // Distance from center to bottom
+        sphereCheckPosition = groundCheckOrigin - Vector3.up * capsuleBottom - Vector3.up * groundCheckDistance;
+    
+        // Check for ground using sphere
+        bool previousGrounded = isGrounded;
+        isGrounded = Physics.CheckSphere(sphereCheckPosition, capsuleRadius * 0.9f, groundLayer, QueryTriggerInteraction.Ignore);
+
+        // Debug logging to see what's happening
+        if (previousGrounded != isGrounded)
         {
-            groundCheckOrigin = transform.position;
+            Debug.Log($"[{gameObject.name}] Ground state changed: {previousGrounded} -> {isGrounded}");
+            Debug.Log($"Check position: {sphereCheckPosition}");
+            Debug.Log($"Check radius: {capsuleRadius * 0.9f}");
+            Debug.Log($"Ground layer: {groundLayer.value}");
+        }
 
-            float capsuleHeight = 2f; // Adjust if your character is shorter
-            float checkRadius = capsuleRadius * 0.9f; // Slightly smaller than actual collider
-
-            Vector3 start = groundCheckOrigin + Vector3.up * 0.1f;
-            Vector3 end = groundCheckOrigin + Vector3.down * groundCheckDistance;
-
-            isGrounded = Physics.CheckCapsule(start, end, checkRadius, groundLayer, QueryTriggerInteraction.Ignore);
-
-            if (showGroundCheckGizmos)
+        // Additional debug - test what we're actually hitting
+        if (Physics.CheckSphere(sphereCheckPosition, capsuleRadius * 0.9f, -1, QueryTriggerInteraction.Ignore))
+        {
+            // Something is there, but maybe not on the right layer
+            Collider[] hits = Physics.OverlapSphere(sphereCheckPosition, capsuleRadius * 0.9f, -1, QueryTriggerInteraction.Ignore);
+            if (hits.Length > 0 && !isGrounded)
             {
-                Debug.DrawLine(start, end, isGrounded ? Color.green : Color.red);
+                Debug.Log($"[{gameObject.name}] Found {hits.Length} colliders but none match ground layer:");
+                foreach (Collider hit in hits)
+                {
+                    Debug.Log($"  - {hit.name} on layer {hit.gameObject.layer} ({LayerMask.LayerToName(hit.gameObject.layer)})");
+                    Debug.Log($"  - Is in ground layer mask: {((1 << hit.gameObject.layer) & groundLayer) != 0}");
+                }
             }
+        }
+
+        if (showGroundCheckGizmos)
+        {
+            // Draw line from center to check position
+            Debug.DrawLine(groundCheckOrigin, sphereCheckPosition, isGrounded ? Color.green : Color.red);
         }
     }
 
@@ -186,9 +212,17 @@ public class PlayerController : NetworkBehaviour // MonoBehaviour yerine Network
     {
         if (showGroundCheckGizmos && Application.isPlaying)
         {
+            // Use the actual ground check results now that all clients calculate it
             Gizmos.color = isGrounded ? Color.green : Color.red;
+            Gizmos.DrawWireSphere(sphereCheckPosition, capsuleRadius * 0.9f);
+            
+            // Draw origin point
+            Gizmos.color = Color.white;
             Gizmos.DrawWireSphere(groundCheckOrigin, 0.1f);
-            Gizmos.DrawLine(groundCheckOrigin, groundCheckOrigin + Vector3.down * (groundCheckDistance + 0.1f));
+            
+            // Draw line connecting them
+            Gizmos.color = isGrounded ? Color.green : Color.red;
+            Gizmos.DrawLine(groundCheckOrigin, sphereCheckPosition);
         }
     }
 }

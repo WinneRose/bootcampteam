@@ -112,7 +112,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _StarVisibility: 0.23400645
+    - _StarVisibility: 0.038877375
     - _StarsDensity: 10
     - _Surface: 0
     - _WorkflowMode: 1
@@ -120,8 +120,8 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _MainColor: {r: 0.5294118, g: 0.83273077, b: 0.9713439, a: 1}
-    - _SecondColor: {r: 0.94275844, g: 0.94894505, b: 0.92835975, a: 0.36536527}
+    - _MainColor: {r: 0.32002294, g: 0.48531678, b: 0.60410815, a: 0.569402}
+    - _SecondColor: {r: 0.569402, g: 0.524743, b: 0.45775455, a: 0.569402}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _Tiling: {r: 8, g: 4, b: 0, a: 0}
   m_BuildTextureStacks: []

@@ -7,6 +7,9 @@ TagManager:
   - Dew
   - Water
   - Bridge
+  - TestObject
+  - waterProjectile
+  - solarProjectile
   layers:
   - Default
   - TransparentFX

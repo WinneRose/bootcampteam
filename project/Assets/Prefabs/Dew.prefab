@@ -115,7 +115,7 @@ MonoBehaviour:
   animationSmoothTime: 0.1
   mouseSensitivity: 0.1
   jumpForce: 7
-  groundCheckDistance: 5
+  groundCheckDistance: 0.2
   groundLayer:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -224,7 +224,7 @@ MonoBehaviour:
   waterCollectionRange: 5
   maxWaterDetectionRange: 50
   waterTag: Water
-  projectilePrefab: {fileID: 1260038920493039900, guid: cecab89964e8d9547ba21d48c51a0273, type: 3}
+  projectilePrefab: {fileID: 5083575877724461539, guid: 4afa42d6bcc7f6d4dbfa020e42a02eef, type: 3}
   projectileSpawnPoint: {fileID: 2096702994583179532}
   projectileSpeed: 20
   projectileLifetime: 5
@@ -1010,6 +1010,10 @@ PrefabInstance:
       propertyPath: waterDistanceText
       value: 
       objectReference: {fileID: 7091050233662978499}
+    - target: {fileID: 6145200899626084219, guid: f138ca3f65b21f048a4793ce78cb740a, type: 3}
+      propertyPath: waterChargingIndicator
+      value: 
+      objectReference: {fileID: 6552950919192773640}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2911895267955744444, guid: f138ca3f65b21f048a4793ce78cb740a, type: 3}
@@ -1030,6 +1034,11 @@ RectTransform:
 --- !u!224 &2962844934068750892 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 314423149798248098, guid: f138ca3f65b21f048a4793ce78cb740a, type: 3}
+  m_PrefabInstance: {fileID: 3261501086834984078}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6552950919192773640 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8625501392445341830, guid: f138ca3f65b21f048a4793ce78cb740a, type: 3}
   m_PrefabInstance: {fileID: 3261501086834984078}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &6738182754762083755 stripped

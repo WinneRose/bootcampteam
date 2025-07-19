@@ -15,6 +15,7 @@ public class SolAbilitySystem : NetworkBehaviour
     public Transform blastSpawnPoint;
     public float blastSpeed = 30f;
     public float blastLifetime = 5f;
+    public float blastDamage = 20f;
     
     [Header("UI References")]
     public AbilityUI abilityUI;
@@ -249,10 +250,20 @@ public class SolAbilitySystem : NetworkBehaviour
         if (renderer != null)
             renderer.material.color = Color.yellow; // Solar blast is yellow
         
-        // Apply physics
+        // Apply physics first
         Rigidbody rb = blast.GetComponent<Rigidbody>();
         if (rb != null)
             rb.AddForce(direction * blastSpeed, ForceMode.Impulse);
+        
+        // Setup Projectile component
+        Projectile projectileComponent = blast.GetComponent<Projectile>();
+        if (projectileComponent == null)
+        {
+            projectileComponent = blast.AddComponent<Projectile>();
+        }
+        
+        // Initialize the projectile with Sol's parameters
+        projectileComponent.damage = blastDamage;
         
         // Destroy after lifetime
         Destroy(blast, blastLifetime);
@@ -275,10 +286,22 @@ public class SolAbilitySystem : NetworkBehaviour
         if (renderer != null)
             renderer.material.color = Color.yellow;
         
+        // Apply physics first
         Rigidbody rb = blast.GetComponent<Rigidbody>();
         if (rb != null)
             rb.AddForce(direction * blastSpeed, ForceMode.Impulse);
         
+        // Setup Projectile component for visual effects only (no damage on non-owner clients)
+        Projectile projectileComponent = blast.GetComponent<Projectile>();
+        if (projectileComponent == null)
+        {
+            projectileComponent = blast.AddComponent<Projectile>();
+        }
+        
+        // Initialize for visual effects only (no damage on client)
+        projectileComponent.damage = 0f; // No damage for non-owner clients
+        
+        // Destroy after lifetime
         Destroy(blast, blastLifetime);
     }
     
