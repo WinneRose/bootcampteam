@@ -27,143 +27,297 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Jump Settings")]
     public float jumpForce = 7f;
-    public float groundCheckDistance = 0.3f; // INCREASED from 0.1f
-    public LayerMask groundLayer = -1; // Default to everything
-    [SerializeField] private bool isGrounded = false;
+    public float groundCheckDistance = 0.3f;
+    public LayerMask groundLayer = -1;
     
-    // Ground check improvements
+    // Network synchronized states
+    private NetworkVariable<bool> networkIsGrounded = new NetworkVariable<bool>(false, 
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    
+    private NetworkVariable<Vector3> networkPosition = new NetworkVariable<Vector3>(Vector3.zero,
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    
+    private NetworkVariable<Vector3> networkVelocity = new NetworkVariable<Vector3>(Vector3.zero,
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    
+    [SerializeField] private bool localIsGrounded = false;
+    
     [Header("Ground Check Debug")]
     public bool showGroundCheckGizmos = true;
     private Vector3 groundCheckOrigin;
-    private Vector3 sphereCheckPosition; // Store for gizmo drawing
-    private float capsuleRadius = 0.5f; // Adjust based on your character's collider
+    private Vector3 sphereCheckPosition;
+    [SerializeField] private float capsuleRadius = 0.5f;
 
     // Anti-flicker input caching
     private Vector3 lastInput;
     private float lastInputTime;
     private float inputStabilityTime = 0.05f;
 
+    // Client prediction and reconciliation
+    private Vector3 predictedPosition;
+    private bool usePrediction = true;
+    private float reconciliationThreshold = 0.1f;
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        
+        // Subscribe to network variable changes
+        networkIsGrounded.OnValueChanged += OnGroundedStateChanged;
+        networkPosition.OnValueChanged += OnNetworkPositionChanged;
+        
+        if (IsOwner)
+        {
+            networkPosition.Value = transform.position;
+            predictedPosition = transform.position;
+        }
+    }
+
     void Start()
     {
-        // Get capsule radius FIRST for all clients (needed for ground check visualization)
+        // Get capsule radius for all clients
         CapsuleCollider capsule = GetComponent<CapsuleCollider>();
         if (capsule != null)
         {
             capsuleRadius = capsule.radius;
         }
 
-        // YALNIZCA KENDİ OYUNCUMUZ İÇİN ÇALIŞACAK KODLAR
-        // Eğer bu nesnenin sahibi ben değilsem, diğer istemcilerdeki kopyası için bu metodu çalıştırma.
-        if (!IsOwner)
-        {
-            // Eğer diğer oyuncuların kamerası veya input sistemi varsa,
-            // bunları burada kapatarak çakışmayı önleyebilirsiniz.
-            // Örneğin: GetComponent<Camera>().enabled = false;
-            // GetComponent<PlayerInput>().enabled = false; // Input System kullanıyorsanız
-            // Cursor.lockState ve Cursor.visible ayarları sadece yerel oyuncuya uygulanmalı.
-            // Bu nedenle, aşağıdaki satırları buraya değil, sadece IsOwner ise çalışacak şekilde taşıyacağız.
-            return; 
-        }
-
         _rb = GetComponent<Rigidbody>();
         _animator = GetComponentInChildren<Animator>();
 
-        _rb.freezeRotation = true;
-        _rb.interpolation = RigidbodyInterpolation.Interpolate;
-        _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        if (IsOwner)
+        {
+            _rb.freezeRotation = true;
+            _rb.interpolation = RigidbodyInterpolation.Interpolate;
+            _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
-        // Fare kilit ve görünürlük ayarları sadece yerel oyuncuya ait olmalı
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+            // Cursor settings only for local player
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            // Non-owners: disable physics but keep collider for ground checking
+            _rb.isKinematic = true;
+            _rb.useGravity = false;
+        }
     }
 
     void FixedUpdate()
     {
-        // Ground check runs for ALL clients (each calculates locally)
-        GroundCheck();
+        if (IsOwner)
+        {
+            // Owner: Authoritative physics and ground check
+            PerformOwnerUpdate();
+        }
+        else
+        {
+            // Non-owners: Use network position for ground checking
+            PerformClientUpdate();
+        }
+    }
 
-        // ÖNEMLİ: Sadece bu NetworkObject'in sahibi ise hareketi işle
-        if (!IsOwner) return;
+    private void PerformOwnerUpdate()
+    {
+        // Standard ground check at current position
+        PerformGroundCheckAtPosition(transform.position);
+        
+        // Update network variables
+        if (Vector3.Distance(networkPosition.Value, transform.position) > 0.01f)
+        {
+            networkPosition.Value = transform.position;
+        }
+        
+        if (Vector3.Distance(networkVelocity.Value, _rb.linearVelocity) > 0.01f)
+        {
+            networkVelocity.Value = _rb.linearVelocity;
+        }
+        
+        if (networkIsGrounded.Value != localIsGrounded)
+        {
+            networkIsGrounded.Value = localIsGrounded;
+        }
 
+        // Handle movement input
         if (Time.fixedTime - lastInputTime < inputStabilityTime)
         {
             ApplyMovement(lastInput);
         }
     }
 
-    // GroundCheck metodu tüm istemcilerde çalışabilir, 
-    // çünkü bu görsel hata ayıklama ve zıplama kontrolü için gerekli bir bilgi.
-    private void GroundCheck()
+    private void PerformClientUpdate()
     {
-        groundCheckOrigin = transform.position;
-    
-        // FIXED: Better sphere position calculation
-        // Calculate the bottom of the capsule collider
-        float capsuleBottom = capsuleRadius; // Distance from center to bottom
-        sphereCheckPosition = groundCheckOrigin - Vector3.up * capsuleBottom - Vector3.up * groundCheckDistance;
-    
-        // Check for ground using sphere
-        bool previousGrounded = isGrounded;
-        isGrounded = Physics.CheckSphere(sphereCheckPosition, capsuleRadius * 0.9f, groundLayer, QueryTriggerInteraction.Ignore);
-
-        // Debug logging to see what's happening
-        if (previousGrounded != isGrounded)
+        // Use network position for ground checking to match server state
+        Vector3 checkPosition = networkPosition.Value;
+        
+        // If we have velocity info, predict slightly ahead for better responsiveness
+        if (usePrediction && networkVelocity.Value.magnitude > 0.1f)
         {
-            Debug.Log($"[{gameObject.name}] Ground state changed: {previousGrounded} -> {isGrounded}");
-            Debug.Log($"Check position: {sphereCheckPosition}");
-            Debug.Log($"Check radius: {capsuleRadius * 0.9f}");
-            Debug.Log($"Ground layer: {groundLayer.value}");
+            float predictionTime = Time.fixedDeltaTime * 2f; // Predict 2 frames ahead
+            checkPosition += networkVelocity.Value * predictionTime;
         }
+        
+        // Perform ground check at the network/predicted position
+        PerformGroundCheckAtPosition(checkPosition);
+        
+        // Smoothly interpolate visual position
+        InterpolateToNetworkPosition();
+    }
 
-        // Additional debug - test what we're actually hitting
-        if (Physics.CheckSphere(sphereCheckPosition, capsuleRadius * 0.9f, -1, QueryTriggerInteraction.Ignore))
+    private void PerformGroundCheckAtPosition(Vector3 position)
+    {
+        groundCheckOrigin = position;
+        float capsuleBottom = capsuleRadius;
+        sphereCheckPosition = groundCheckOrigin - Vector3.up * capsuleBottom - Vector3.up * groundCheckDistance;
+
+        bool previousGrounded = localIsGrounded;
+        localIsGrounded = Physics.CheckSphere(sphereCheckPosition, capsuleRadius, groundLayer, QueryTriggerInteraction.Ignore);
+
+        // Debug logging for state changes
+        if (previousGrounded != localIsGrounded)
         {
-            // Something is there, but maybe not on the right layer
-            Collider[] hits = Physics.OverlapSphere(sphereCheckPosition, capsuleRadius * 0.9f, -1, QueryTriggerInteraction.Ignore);
-            if (hits.Length > 0 && !isGrounded)
+            string clientType = IsOwner ? "OWNER" : "CLIENT";
+            Debug.Log($"[{clientType}] Ground state changed: {previousGrounded} -> {localIsGrounded} at position {position}");
+            
+            // Additional debug info for clients
+            if (!IsOwner)
             {
-                Debug.Log($"[{gameObject.name}] Found {hits.Length} colliders but none match ground layer:");
-                foreach (Collider hit in hits)
-                {
-                    Debug.Log($"  - {hit.name} on layer {hit.gameObject.layer} ({LayerMask.LayerToName(hit.gameObject.layer)})");
-                    Debug.Log($"  - Is in ground layer mask: {((1 << hit.gameObject.layer) & groundLayer) != 0}");
-                }
+                Debug.Log($"[CLIENT] Network position: {networkPosition.Value}, Check position: {position}");
+                Debug.Log($"[CLIENT] Network grounded: {networkIsGrounded.Value}, Local grounded: {localIsGrounded}");
             }
         }
 
-        if (showGroundCheckGizmos)
+        // Enhanced debugging - check what we're hitting
+        if (!localIsGrounded)
         {
-            // Draw line from center to check position
-            Debug.DrawLine(groundCheckOrigin, sphereCheckPosition, isGrounded ? Color.green : Color.red);
+            // Check if there's something there but on wrong layer
+            Collider[] hits = Physics.OverlapSphere(sphereCheckPosition, capsuleRadius, -1, QueryTriggerInteraction.Ignore);
+            if (hits.Length > 0)
+            {
+                string clientType = IsOwner ? "OWNER" : "CLIENT";
+                Debug.Log($"[{clientType}] Found {hits.Length} colliders but not grounded:");
+                foreach (Collider hit in hits)
+                {
+                    if (hit.gameObject != gameObject) // Don't count self
+                    {
+                        bool inGroundLayer = ((1 << hit.gameObject.layer) & groundLayer) != 0;
+                        Debug.Log($"  - {hit.name} on layer {hit.gameObject.layer} ({LayerMask.LayerToName(hit.gameObject.layer)}) - In ground layer: {inGroundLayer}");
+                    }
+                }
+            }
         }
     }
 
-    // Input fonksiyonları, sadece sahibi olan istemci tarafından çağrılmalı.
-    // Bu yüzden içine IsOwner kontrolü eklemeye gerek yok, çünkü çağıran kod zaten IsOwner kontrolü yapmalı.
+    private void InterpolateToNetworkPosition()
+    {
+        Vector3 targetPosition = networkPosition.Value;
+        float distance = Vector3.Distance(transform.position, targetPosition);
+        
+        // Only interpolate if the distance is reasonable (not a teleport)
+        if (distance < reconciliationThreshold)
+        {
+            float lerpRate = 15f * Time.deltaTime;
+            transform.position = Vector3.Lerp(transform.position, targetPosition, lerpRate);
+        }
+        else
+        {
+            // Large distance - snap to network position
+            transform.position = targetPosition;
+            Debug.Log($"[CLIENT] Snapped to network position. Distance was: {distance}");
+        }
+    }
+
+    private void OnNetworkPositionChanged(Vector3 previousValue, Vector3 newValue)
+    {
+        if (!IsOwner)
+        {
+            // Check for prediction accuracy
+            if (usePrediction)
+            {
+                float predictionError = Vector3.Distance(predictedPosition, newValue);
+                if (predictionError > reconciliationThreshold)
+                {
+                    Debug.Log($"[CLIENT] Prediction error: {predictionError}. Reconciling.");
+                }
+            }
+            predictedPosition = newValue;
+        }
+    }
+
+    private void OnGroundedStateChanged(bool previousValue, bool newValue)
+    {
+        if (!IsOwner)
+        {
+            Debug.Log($"[CLIENT] Network ground state changed: {previousValue} -> {newValue}");
+            
+            // Force a ground check update when network state changes
+            PerformGroundCheckAtPosition(networkPosition.Value);
+        }
+    }
+
     public void Move(Vector3 input)
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+        if (!IsOwner) return;
         lastInput = input;
         lastInputTime = Time.time;
     }
 
     public void Jump()
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
-        if (isGrounded)
+        if (!IsOwner) return;
+        
+        // Use local ground check for immediate response
+        bool canJumpLocal = localIsGrounded;
+        bool canJumpNetwork = networkIsGrounded.Value;
+        
+        Debug.Log($"[JUMP] Local grounded: {canJumpLocal}, Network grounded: {canJumpNetwork}");
+        
+        // Allow jump if locally grounded (for responsiveness)
+        if (canJumpLocal)
         {
-            _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            PerformJump();
+        }
+        else
+        {
+            Debug.Log($"Cannot jump - not grounded locally. Position: {transform.position}");
+            
+            // Force immediate ground check for debugging
+            PerformGroundCheckAtPosition(transform.position);
+            Debug.Log($"Immediate ground check result: {localIsGrounded}");
+        }
+    }
 
-            if (_animator != null)
-                _animator.SetTrigger("jump");
+    private void PerformJump()
+    {
+        if (!IsOwner) return;
+
+        _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        
+        if (_animator != null)
+            _animator.SetTrigger("jump");
+            
+        // Update states immediately
+        localIsGrounded = false;
+        networkIsGrounded.Value = false;
+        
+        Debug.Log($"[JUMP] Performed jump at position: {transform.position}");
+        
+        // Notify other clients
+        PlayJumpAnimationClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayJumpAnimationClientRpc()
+    {
+        if (!IsOwner && _animator != null)
+        {
+            _animator.SetTrigger("jump");
         }
     }
 
     private void ApplyMovement(Vector3 input)
     {
-        // Bu metot zaten FixedUpdate içinden çağrılıyor ve FixedUpdate'te IsOwner kontrolü var.
-        // Tekrar eklemeye gerek yok, ancak güvenlik için eklenebilir.
-        // if (!IsOwner) return; 
+        if (!IsOwner) return;
 
         float inputMagnitude = input.magnitude;
         bool isHolding = inputMagnitude > 0.1f;
@@ -201,28 +355,77 @@ public class PlayerController : NetworkBehaviour
 
     public void Look(Vector3 lookInput)
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+        if (!IsOwner) return;
         float yawDelta = lookInput.x * mouseSensitivity;
         Quaternion deltaRotation = Quaternion.Euler(0f, yawDelta, 0f);
         _rb.MoveRotation(_rb.rotation * deltaRotation);
     }
 
-    // Debug visualization - Bu metot tüm istemcilerde çalışabilir.
     void OnDrawGizmos()
     {
         if (showGroundCheckGizmos && Application.isPlaying)
         {
-            // Use the actual ground check results now that all clients calculate it
-            Gizmos.color = isGrounded ? Color.green : Color.red;
-            Gizmos.DrawWireSphere(sphereCheckPosition, capsuleRadius * 0.9f);
+            // Different colors for different client types and states
+            Color gizmoColor;
+            if (IsOwner)
+            {
+                gizmoColor = localIsGrounded ? Color.green : Color.red;
+            }
+            else
+            {
+                // Client colors: green if both local and network agree, yellow if disagree, red if both false
+                if (localIsGrounded && networkIsGrounded.Value)
+                    gizmoColor = Color.green;
+                else if (localIsGrounded != networkIsGrounded.Value)
+                    gizmoColor = Color.yellow;
+                else
+                    gizmoColor = Color.red;
+            }
+            
+            // Draw ground check sphere
+            Gizmos.color = gizmoColor;
+            if (sphereCheckPosition != Vector3.zero)
+            {
+                Gizmos.DrawWireSphere(sphereCheckPosition, capsuleRadius * 0.9f);
+            }
             
             // Draw origin point
             Gizmos.color = Color.white;
-            Gizmos.DrawWireSphere(groundCheckOrigin, 0.1f);
+            if (groundCheckOrigin != Vector3.zero)
+            {
+                Gizmos.DrawWireSphere(groundCheckOrigin, 0.1f);
+            }
             
-            // Draw line connecting them
-            Gizmos.color = isGrounded ? Color.green : Color.red;
-            Gizmos.DrawLine(groundCheckOrigin, sphereCheckPosition);
+            // Draw connection line
+            Gizmos.color = gizmoColor;
+            if (groundCheckOrigin != Vector3.zero && sphereCheckPosition != Vector3.zero)
+            {
+                Gizmos.DrawLine(groundCheckOrigin, sphereCheckPosition);
+            }
+            
+            // Show client type indicator
+            if (!IsOwner)
+            {
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawWireCube(transform.position + Vector3.up * 2.5f, Vector3.one * 0.2f);
+                
+                // Show network position if different from current position
+                if (Vector3.Distance(transform.position, networkPosition.Value) > 0.05f)
+                {
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawWireSphere(networkPosition.Value, 0.3f);
+                    Gizmos.DrawLine(transform.position, networkPosition.Value);
+                }
+            }
         }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (networkIsGrounded != null)
+            networkIsGrounded.OnValueChanged -= OnGroundedStateChanged;
+        if (networkPosition != null)
+            networkPosition.OnValueChanged -= OnNetworkPositionChanged;
+        base.OnNetworkDespawn();
     }
 }
