@@ -10,16 +10,16 @@ Tüm görevler, puanlamalar ve ilerleme durumları Miro panosunda ayrıntılı o
 🎯 Sprint 2 – Board & Puanlama
 
 Sprint 2 – Mekaniklerin Geliştirilmesi
-*Gündüz/gece döngüsü kurulumu 20
-*Multiplayer Sistemi 60
-*Sol ve Dew’in yetenekleri mekanikleri 35
-*Görev sistemi 35
-*Giriş ekranı tasarımı 25
-*İlk oynanabilir demo build’i 50
-*Ses efektleri ve görsel işleme 20
-*Level design 40
-*Karakter animasyonları güncelleme 45
-*Github düzenlemesi döküman hazırlığı 20
+*Gündüz/gece döngüsü kurulumu **20**
+*Multiplayer Sistemi **60**
+*Sol ve Dew’in yetenekleri mekanikleri **35**
+*Görev sistemi **35**
+*Giriş ekranı tasarımı **25**
+*İlk oynanabilir demo build’i **50**
+*Ses efektleri ve görsel işleme **20**
+*Level design **40**
+*Karakter animasyonları güncelleme **45**
+*Github düzenlemesi döküman hazırlığı **20**
 🎯 Toplam: 350 Puan
 
 🧠 Sprint Tahmin Mantığı
