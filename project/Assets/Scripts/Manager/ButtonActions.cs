@@ -1,199 +1,240 @@
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections;
+using Unity.Netcode.Transports.UTP;
 
 public class ButtonActions : MonoBehaviour
 {
-    private NetworkManager NetworkManager;
-    private GameManager gameManager;
+    private NetworkManager networkManager;
+    private UIManager uiManager;
     
-    [Header("UI References")]
-    [Tooltip("Canvas containing the host/client buttons - will be disabled when button is clicked")]
-    public Canvas menuCanvas;
+    [Header("Network Settings")]
+    [Tooltip("IP address for client to connect to")]
+    public string serverAddress = "127.0.0.1";
+    [Tooltip("Port for connection")]
+    public ushort serverPort = 7777;
+    
+    // Remove gameSceneName - character selection will handle scene loading
     
     void Start()
     {
-        NetworkManager = GetComponentInParent<NetworkManager>();
-        gameManager = FindObjectOfType<GameManager>();
-        
-        // Auto-find canvas if not assigned - look for canvas named "Buttons" or find the correct one
-        if (menuCanvas == null)
+        networkManager = NetworkManager.Singleton;
+        if (networkManager == null)
         {
-            // First try to find a canvas named "Buttons"
-            GameObject ServerUI = GameObject.Find("ServerUI");
-            if (ServerUI != null)
+            networkManager = FindObjectOfType<NetworkManager>();
+        }
+        
+        uiManager = FindObjectOfType<UIManager>();
+        
+        SetupTransport();
+        
+        if (uiManager == null)
+        {
+            Debug.LogError("UIManager not found in scene!");
+        }
+        
+        if (networkManager == null)
+        {
+            Debug.LogError("NetworkManager not found! Make sure there's a NetworkManager in the scene.");
+        }
+        
+        Debug.Log("ButtonActions initialized");
+    }
+    
+    private void SetupTransport()
+    {
+        if (networkManager == null) return;
+        
+        if (networkManager.NetworkConfig.NetworkTransport == null)
+        {
+            Debug.LogError("No transport assigned to NetworkManager! Adding Unity Transport...");
+            
+            UnityTransport transport = networkManager.GetComponent<UnityTransport>();
+            if (transport == null)
             {
-                menuCanvas = ServerUI.GetComponent<Canvas>();
+                transport = networkManager.gameObject.AddComponent<UnityTransport>();
+                Debug.Log("Added Unity Transport component to NetworkManager");
             }
             
-            // If still not found, try to find parent canvas
-            if (menuCanvas == null)
-            {
-                menuCanvas = GetComponentInParent<Canvas>();
-            }
+            networkManager.NetworkConfig.NetworkTransport = transport;
+            Debug.Log("Assigned Unity Transport to NetworkManager");
+        }
+        
+        UnityTransport unityTransport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
+        if (unityTransport != null)
+        {
+            unityTransport.ConnectionData.Address = serverAddress;
+            unityTransport.ConnectionData.Port = serverPort;
+            unityTransport.ConnectionData.ServerListenAddress = "0.0.0.0";
             
-            // Last resort: find any canvas with buttons
-            if (menuCanvas == null)
-            {
-                Canvas[] allCanvases = FindObjectsOfType<Canvas>();
-                foreach (Canvas canvas in allCanvases)
-                {
-                    if (canvas.name.ToLower().Contains("button") || canvas.name.ToLower().Contains("menu"))
-                    {
-                        menuCanvas = canvas;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        if (gameManager == null)
-        {
-            Debug.LogError("GameManager not found in scene!");
-        }
-        
-        if (menuCanvas == null)
-        {
-            Debug.LogError("Menu Canvas not found! Please assign the 'Buttons' Canvas in the inspector.");
-        }
-        else
-        {
-            Debug.Log($"ButtonActions: Found menu canvas: {menuCanvas.name}");
+            Debug.Log($"Transport configured: {serverAddress}:{serverPort}");
         }
     }
 
     public void StartHost()
     {
-        Debug.Log("Start Host button clicked - disabling menu");
-        
-        // Disable the canvas immediately when button is clicked
-        DisableCanvas();
-        
-        if (NetworkManager.StartHost())
+        if (networkManager == null)
         {
-            Debug.Log("Host started successfully");
-            // Use coroutine for more reliable timing
-            StartCoroutine(WaitAndSpawnHost());
+            Debug.LogError("NetworkManager is null! Cannot start host.");
+            return;
         }
-        else
+        
+        Debug.Log("Starting Host...");
+        
+        SetupTransport();
+        
+        try
         {
-            Debug.LogError("Failed to start host");
-            // Re-enable canvas if failed to start
-            EnableCanvas();
+            if (networkManager.StartHost())
+            {
+                Debug.Log("Host started successfully - staying in lobby for character selection");
+                // Don't load game scene here - let character selection handle it
+            }
+            else
+            {
+                Debug.LogError("Failed to start host");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Exception when starting host: {e.Message}");
         }
     }
 
     public void StartClient()
     {
-        Debug.Log("Start Client button clicked - disabling menu");
-        
-        // Disable the canvas immediately when button is clicked
-        DisableCanvas();
-        
-        if (NetworkManager.StartClient())
+        if (networkManager == null)
         {
-            Debug.Log("Client connection started");
-            // Subscribe to connection events for clients
-            NetworkManager.OnClientConnectedCallback += OnClientConnected;
+            Debug.LogError("NetworkManager is null! Cannot start client.");
+            return;
         }
-        else
+        
+        Debug.Log("Starting Client...");
+        
+        SetupTransport();
+        
+        try
         {
-            Debug.LogError("Failed to start client");
-            // Re-enable canvas if failed to start
-            EnableCanvas();
+            if (networkManager.StartClient())
+            {
+                Debug.Log("Client connection started");
+                
+                networkManager.OnClientConnectedCallback += OnClientConnected;
+                networkManager.OnClientDisconnectCallback += OnClientDisconnected;
+                
+                StartCoroutine(ClientConnectionTimeout());
+            }
+            else
+            {
+                Debug.LogError("Failed to start client");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Exception when starting client: {e.Message}");
         }
     }
     
-    private void DisableCanvas()
+    private IEnumerator ClientConnectionTimeout()
     {
-        if (menuCanvas != null)
-        {
-            menuCanvas.gameObject.SetActive(false);
-            Debug.Log("Menu canvas disabled");
-        }
-    }
-    
-    private void EnableCanvas()
-    {
-        if (menuCanvas != null)
-        {
-            menuCanvas.gameObject.SetActive(true);
-            Debug.Log("Menu canvas enabled");
-        }
-    }
-
-    private IEnumerator WaitAndSpawnHost()
-    {
-        // Wait for network to be fully ready
-        yield return new WaitUntil(() => NetworkManager.IsHost && NetworkManager.IsConnectedClient);
+        float timeout = 10f;
+        float elapsed = 0f;
         
-        // Additional small delay to ensure everything is initialized
-        yield return new WaitForSeconds(0.2f);
-        
-        Debug.Log("Network is ready, spawning host player");
-        
-        if (gameManager != null)
+        while (elapsed < timeout && !networkManager.IsConnectedClient)
         {
-            gameManager.SpawnAsHost();
+            yield return new WaitForSeconds(0.1f);
+            elapsed += 0.1f;
         }
-        else
+        
+        if (!networkManager.IsConnectedClient)
         {
-            Debug.LogError("GameManager is null when trying to spawn host!");
-            // Re-enable canvas if spawn failed
-            EnableCanvas();
+            Debug.LogError("Client connection timed out!");
+            networkManager.Shutdown();
+            
+            if (uiManager != null)
+            {
+                uiManager.OnDisconnected();
+            }
         }
     }
 
     private void OnClientConnected(ulong clientId)
     {
-        Debug.Log($"Client {clientId} connected. Local client ID: {NetworkManager.LocalClientId}");
+        Debug.Log($"Client {clientId} connected. Local client ID: {networkManager.LocalClientId}");
         
-        // Only handle our own client connection (and not if we're the host)
-        if (clientId == NetworkManager.LocalClientId && !NetworkManager.IsHost)
+        if (clientId == networkManager.LocalClientId && !networkManager.IsHost)
         {
-            Debug.Log($"Local client {clientId} connected - spawning client player");
-            
-            // Small delay to ensure network is fully ready
-            StartCoroutine(WaitAndSpawnClient());
+            Debug.Log($"Local client {clientId} connected successfully - ready for character selection");
         }
     }
-
-    private IEnumerator WaitAndSpawnClient()
+    
+    private void OnClientDisconnected(ulong clientId)
     {
-        // Wait a bit to ensure network is stable
-        yield return new WaitForSeconds(0.1f);
+        Debug.Log($"Client {clientId} disconnected");
         
-        if (gameManager != null)
+        if (clientId == networkManager.LocalClientId)
         {
-            Debug.Log("Spawning client player");
-            gameManager.SpawnAsClient();
+            Debug.Log("Local client disconnected");
+            
+            if (uiManager != null)
+            {
+                uiManager.OnDisconnected();
+            }
+        }
+    }
+    
+    public void Disconnect()
+    {
+        if (networkManager != null && networkManager.IsConnectedClient)
+        {
+            Debug.Log("Disconnecting from network...");
+            networkManager.Shutdown();
+        }
+        
+        if (uiManager != null)
+        {
+            uiManager.OnDisconnected();
+        }
+    }
+    
+    [ContextMenu("Debug Network Status")]
+    public void DebugNetworkStatus()
+    {
+        if (networkManager == null)
+        {
+            Debug.Log("NetworkManager: NULL");
+            return;
+        }
+        
+        Debug.Log("=== Network Status ===");
+        Debug.Log($"Is Host: {networkManager.IsHost}");
+        Debug.Log($"Is Client: {networkManager.IsClient}");
+        Debug.Log($"Is Server: {networkManager.IsServer}");
+        Debug.Log($"Is Connected Client: {networkManager.IsConnectedClient}");
+        Debug.Log($"Local Client ID: {networkManager.LocalClientId}");
+        Debug.Log($"Connected Clients Count: {networkManager.ConnectedClients.Count}");
+        
+        if (networkManager.NetworkConfig.NetworkTransport != null)
+        {
+            Debug.Log($"Transport: {networkManager.NetworkConfig.NetworkTransport.GetType().Name}");
+            
+            if (networkManager.NetworkConfig.NetworkTransport is UnityTransport transport)
+            {
+                Debug.Log($"Transport Address: {transport.ConnectionData.Address}:{transport.ConnectionData.Port}");
+            }
         }
         else
         {
-            Debug.LogError("GameManager is null when trying to spawn client!");
-            // Re-enable canvas if spawn failed
-            EnableCanvas();
+            Debug.Log("Transport: NULL - This is the problem!");
         }
-    }
-    
-    // Public method to manually re-enable canvas (useful for disconnect/back to menu functionality)
-    public void ShowMenu()
-    {
-        EnableCanvas();
-    }
-    
-    // Public method to manually disable canvas
-    public void HideMenu()
-    {
-        DisableCanvas();
     }
 
     void OnDestroy()
     {
-        // Unsubscribe from events
-        if (NetworkManager != null)
+        if (networkManager != null)
         {
-            NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+            networkManager.OnClientConnectedCallback -= OnClientConnected;
+            networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
         }
     }
 }

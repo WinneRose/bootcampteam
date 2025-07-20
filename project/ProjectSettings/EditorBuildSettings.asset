@@ -5,12 +5,18 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/RhythmOfStream.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/Test Levels/TestMultiplayer.unity
     guid: c9ab710788186974c91d5a2b615b0989
+  - enabled: 1
+    path: Assets/Scenes/Menu Scenes/MainMenu.unity
+    guid: d02854f6aa88d4242ac2426fe2f60f34
+  - enabled: 1
+    path: Assets/Scenes/Menu Scenes/Character_Selected.unity
+    guid: 930a7e62e4838854d88bd926b5a1f7d3
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 9e529f6e9da2aab4aac00b1158ddc9e7, type: 3}
   m_UseUCBPForAssetBundles: 0
