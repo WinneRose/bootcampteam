@@ -6,6 +6,7 @@ public class PlayerController : NetworkBehaviour
 {
     private Rigidbody _rb;
     private Animator _animator;
+    private AudioSource _audioSource;
 
     [Header("Movement Settings")]
     public float walkSpeed = 3f;
@@ -27,41 +28,96 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Jump Settings")]
     public float jumpForce = 7f;
-    public float groundCheckDistance = 0.3f; // INCREASED from 0.1f
-    public LayerMask groundLayer = -1; // Default to everything
+    public float groundCheckDistance = 0.3f;
+    public LayerMask groundLayer = -1;
     [SerializeField] private bool isGrounded = false;
     
-    // Ground check improvements
     [Header("Ground Check Debug")]
     public bool showGroundCheckGizmos = true;
     private Vector3 groundCheckOrigin;
-    private Vector3 sphereCheckPosition; // Store for gizmo drawing
-    [SerializeField] private float capsuleRadius = 0.5f; // Adjust based on your character's collider
+    private Vector3 sphereCheckPosition;
+    [SerializeField] private float capsuleRadius = 0.5f;
+
+    [Header("Voice Effects")]
+    [Tooltip("Jump voice clips (will play randomly)")]
+    public AudioClip[] jumpVoiceClips;
+    
+    [Tooltip("Movement voice clips for walking (will play randomly during movement)")]
+    public AudioClip[] walkVoiceClips;
+    
+    [Tooltip("Movement voice clips for running (will play randomly during running)")]
+    public AudioClip[] runVoiceClips;
+    
+    [Tooltip("Landing voice clips (when landing from jump)")]
+    public AudioClip[] landingVoiceClips;
+    
+    [Header("Voice Settings")]
+    [Range(0f, 1f)]
+    public float voiceVolume = 0.7f;
+    
+    [Tooltip("Chance to play walk voice per movement check")]
+    [Range(0f, 1f)]
+    public float walkVoiceChance = 0.1f;
+    
+    [Tooltip("Chance to play run voice per movement check (higher for more frequent)")]
+    [Range(0f, 1f)]
+    public float runVoiceChance = 0.3f;
+    
+    [Tooltip("Cooldown between walk voice clips")]
+    public float walkVoiceCooldown = 3f;
+    
+    [Tooltip("Cooldown between run voice clips (shorter for more frequent)")]
+    public float runVoiceCooldown = 1f;
+    
+    [Tooltip("Cooldown between jump voice clips")]
+    public float jumpVoiceCooldown = 1f;
+    
+    [Tooltip("Minimum fall velocity to trigger landing sound")]
+    public float minLandingVelocity = -3f;
 
     // Anti-flicker input caching
     private Vector3 lastInput;
     private float lastInputTime;
     private float inputStabilityTime = 0.05f;
 
+    // Voice effect tracking
+    private float lastWalkVoiceTime;
+    private float lastRunVoiceTime;
+    private float lastJumpVoiceTime;
+    private bool wasGroundedLastFrame = true;
+    private bool isCurrentlyMoving = false;
+    private bool wasMovingLastFrame = false;
+    private float lastVerticalVelocity = 0f;
+    private bool wasFalling = false;
+
     void Start()
     {
-        // Get capsule radius FIRST for all clients (needed for ground check visualization)
+        // Get capsule radius FIRST for all clients
         CapsuleCollider capsule = GetComponent<CapsuleCollider>();
         if (capsule != null)
         {
             capsuleRadius = capsule.radius;
         }
 
-        // YALNIZCA KENDİ OYUNCUMUZ İÇİN ÇALIŞACAK KODLAR
-        // Eğer bu nesnenin sahibi ben değilsem, diğer istemcilerdeki kopyası için bu metodu çalıştırma.
+        // Get or add AudioSource for voice effects
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            Debug.Log($"🔊 Added AudioSource to {gameObject.name}");
+        }
+
+        // Configure AudioSource for voice effects
+        _audioSource.volume = voiceVolume;
+        _audioSource.pitch = 1f;
+        _audioSource.spatialBlend = 1f; // 3D sound
+        _audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        _audioSource.minDistance = 1f;
+        _audioSource.maxDistance = 20f;
+
+        // Only setup for owner
         if (!IsOwner)
         {
-            // Eğer diğer oyuncuların kamerası veya input sistemi varsa,
-            // bunları burada kapatarak çakışmayı önleyebilirsiniz.
-            // Örneğin: GetComponent<Camera>().enabled = false;
-            // GetComponent<PlayerInput>().enabled = false; // Input System kullanıyorsanız
-            // Cursor.lockState ve Cursor.visible ayarları sadece yerel oyuncuya uygulanmalı.
-            // Bu nedenle, aşağıdaki satırları buraya değil, sadece IsOwner ise çalışacak şekilde taşıyacağız.
             return; 
         }
 
@@ -72,101 +128,109 @@ public class PlayerController : NetworkBehaviour
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
-        // Fare kilit ve görünürlük ayarları sadece yerel oyuncuya ait olmalı
+        // Cursor settings only for owner
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        Debug.Log($"🔊 Voice effects initialized for {gameObject.name} (IsOwner: {IsOwner})");
     }
 
     void FixedUpdate()
     {
-        // Ground check runs for ALL clients (each calculates locally)
+        // Ground check runs for ALL clients
         GroundCheck();
 
-        // ÖNEMLİ: Sadece bu NetworkObject'in sahibi ise hareketi işle
+        // Movement only for owner
         if (!IsOwner) return;
 
         if (Time.fixedTime - lastInputTime < inputStabilityTime)
         {
             ApplyMovement(lastInput);
         }
+
+        // Handle voice effects
+        HandleVoiceEffects();
     }
 
-    // GroundCheck metodu tüm istemcilerde çalışabilir, 
-    // çünkü bu görsel hata ayıklama ve zıplama kontrolü için gerekli bir bilgi.
+    private void HandleVoiceEffects()
+    {
+        if (!IsOwner) return;
+
+        // Track falling state for better landing detection
+        float currentVerticalVelocity = _rb.linearVelocity.y;
+        bool isFalling = currentVerticalVelocity < minLandingVelocity && !isGrounded;
+        
+        // Check for landing (was falling with significant velocity, now grounded)
+        if (wasFalling && isGrounded && lastVerticalVelocity < minLandingVelocity)
+        {
+            PlayLandingVoice();
+            Debug.Log($"🔊 Landing detected: velocity was {lastVerticalVelocity:F2}");
+        }
+
+        // Check for movement state changes
+        if (isCurrentlyMoving && !wasMovingLastFrame)
+        {
+            // Started moving
+            PlayMovementVoice();
+        }
+
+        // Update tracking variables
+        wasGroundedLastFrame = isGrounded;
+        wasMovingLastFrame = isCurrentlyMoving;
+        wasFalling = isFalling;
+        lastVerticalVelocity = currentVerticalVelocity;
+    }
+
     private void GroundCheck()
     {
         groundCheckOrigin = transform.position;
-    
-        // FIXED: Better sphere position calculation
-        // Calculate the bottom of the capsule collider
-        float capsuleBottom = capsuleRadius; // Distance from center to bottom
+        
+        float capsuleBottom = capsuleRadius;
         sphereCheckPosition = groundCheckOrigin - Vector3.up * capsuleBottom - Vector3.up * groundCheckDistance;
-    
-        // Check for ground using sphere
+        
         bool previousGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(sphereCheckPosition, capsuleRadius, groundLayer, QueryTriggerInteraction.Ignore);
 
-        // Debug logging to see what's happening
-        if (previousGrounded != isGrounded)
+        if (previousGrounded != isGrounded && IsOwner)
         {
             Debug.Log($"[{gameObject.name}] Ground state changed: {previousGrounded} -> {isGrounded}");
-            Debug.Log($"Check position: {sphereCheckPosition}");
-            Debug.Log($"Check radius: {capsuleRadius }");
-            Debug.Log($"Ground layer: {groundLayer.value}");
-        }
-
-        // Additional debug - test what we're actually hitting
-        if (Physics.CheckSphere(sphereCheckPosition, capsuleRadius, -1, QueryTriggerInteraction.Ignore))
-        {
-            // Something is there, but maybe not on the right layer
-            Collider[] hits = Physics.OverlapSphere(sphereCheckPosition, capsuleRadius, -1, QueryTriggerInteraction.Ignore);
-            if (hits.Length > 0 && !isGrounded)
-            {
-                Debug.Log($"[{gameObject.name}] Found {hits.Length} colliders but none match ground layer:");
-                foreach (Collider hit in hits)
-                {
-                    Debug.Log($"  - {hit.name} on layer {hit.gameObject.layer} ({LayerMask.LayerToName(hit.gameObject.layer)})");
-                    Debug.Log($"  - Is in ground layer mask: {((1 << hit.gameObject.layer) & groundLayer) != 0}");
-                }
-            }
         }
 
         if (showGroundCheckGizmos)
         {
-            // Draw line from center to check position
             Debug.DrawLine(groundCheckOrigin, sphereCheckPosition, isGrounded ? Color.green : Color.red);
         }
     }
 
-    // Input fonksiyonları, sadece sahibi olan istemci tarafından çağrılmalı.
-    // Bu yüzden içine IsOwner kontrolü eklemeye gerek yok, çünkü çağıran kod zaten IsOwner kontrolü yapmalı.
     public void Move(Vector3 input)
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+        if (!IsOwner) return;
         lastInput = input;
         lastInputTime = Time.time;
     }
 
     public void Jump()
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+        if (!IsOwner) return;
         if (isGrounded)
         {
             _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 
             if (_animator != null)
                 _animator.SetTrigger("jump");
+
+            // Play jump voice effect
+            PlayJumpVoice();
         }
     }
 
     private void ApplyMovement(Vector3 input)
     {
-        // Bu metot zaten FixedUpdate içinden çağrılıyor ve FixedUpdate'te IsOwner kontrolü var.
-        // Tekrar eklemeye gerek yok, ancak güvenlik için eklenebilir.
-        // if (!IsOwner) return; 
-
         float inputMagnitude = input.magnitude;
         bool isHolding = inputMagnitude > 0.1f;
+        
+        // Update current movement state
+        isCurrentlyMoving = isHolding;
 
         if (isHolding)
             holdTimer += Time.fixedDeltaTime;
@@ -197,32 +261,269 @@ public class PlayerController : NetworkBehaviour
 
         if (_animator != null)
             _animator.SetFloat("speed", currentAnimSpeed);
+
+        // Play movement voice effects periodically while moving
+        if (isHolding && isGrounded)
+        {
+            if (isRunning && CanPlayRunVoice())
+            {
+                if (Random.value < runVoiceChance)
+                {
+                    PlayRunVoice();
+                }
+            }
+            else if (!isRunning && CanPlayWalkVoice())
+            {
+                if (Random.value < walkVoiceChance)
+                {
+                    PlayWalkVoice();
+                }
+            }
+        }
     }
 
     public void Look(Vector3 lookInput)
     {
-        if (!IsOwner) return; // Yine de emin olmak için buraya da ekleyebiliriz.
+        if (!IsOwner) return;
         float yawDelta = lookInput.x * mouseSensitivity;
         Quaternion deltaRotation = Quaternion.Euler(0f, yawDelta, 0f);
         _rb.MoveRotation(_rb.rotation * deltaRotation);
     }
 
-    // Debug visualization - Bu metot tüm istemcilerde çalışabilir.
+    #region Voice Effects Methods
+
+    private void PlayJumpVoice()
+    {
+        if (!CanPlayJumpVoice() || jumpVoiceClips == null || jumpVoiceClips.Length == 0)
+            return;
+
+        AudioClip randomClip = GetRandomClip(jumpVoiceClips);
+        if (randomClip != null)
+        {
+            PlayVoiceEffectClientRpc(VoiceEffectType.Jump, GetClipIndex(jumpVoiceClips, randomClip));
+            lastJumpVoiceTime = Time.time;
+            Debug.Log($"🔊 Jump voice played for {gameObject.name}");
+        }
+    }
+
+    private void PlayMovementVoice()
+    {
+        if (isRunning)
+        {
+            PlayRunVoice();
+        }
+        else
+        {
+            PlayWalkVoice();
+        }
+    }
+
+    private void PlayWalkVoice()
+    {
+        if (!CanPlayWalkVoice() || walkVoiceClips == null || walkVoiceClips.Length == 0)
+            return;
+
+        AudioClip randomClip = GetRandomClip(walkVoiceClips);
+        if (randomClip != null)
+        {
+            PlayVoiceEffectClientRpc(VoiceEffectType.Walk, GetClipIndex(walkVoiceClips, randomClip));
+            lastWalkVoiceTime = Time.time;
+            Debug.Log($"🔊 Walk voice played for {gameObject.name}");
+        }
+    }
+
+    private void PlayRunVoice()
+    {
+        if (!CanPlayRunVoice() || runVoiceClips == null || runVoiceClips.Length == 0)
+            return;
+
+        AudioClip randomClip = GetRandomClip(runVoiceClips);
+        if (randomClip != null)
+        {
+            PlayVoiceEffectClientRpc(VoiceEffectType.Run, GetClipIndex(runVoiceClips, randomClip));
+            lastRunVoiceTime = Time.time;
+            Debug.Log($"🔊 Run voice played for {gameObject.name}");
+        }
+    }
+
+    private void PlayLandingVoice()
+    {
+        if (landingVoiceClips == null || landingVoiceClips.Length == 0)
+            return;
+
+        AudioClip randomClip = GetRandomClip(landingVoiceClips);
+        if (randomClip != null)
+        {
+            PlayVoiceEffectClientRpc(VoiceEffectType.Landing, GetClipIndex(landingVoiceClips, randomClip));
+            Debug.Log($"🔊 Landing voice played for {gameObject.name}");
+        }
+    }
+
+    [ClientRpc]
+    private void PlayVoiceEffectClientRpc(VoiceEffectType effectType, int clipIndex)
+    {
+        if (_audioSource == null) return;
+
+        AudioClip clipToPlay = null;
+        
+        switch (effectType)
+        {
+            case VoiceEffectType.Jump:
+                if (jumpVoiceClips != null && clipIndex < jumpVoiceClips.Length)
+                    clipToPlay = jumpVoiceClips[clipIndex];
+                break;
+            case VoiceEffectType.Walk:
+                if (walkVoiceClips != null && clipIndex < walkVoiceClips.Length)
+                    clipToPlay = walkVoiceClips[clipIndex];
+                break;
+            case VoiceEffectType.Run:
+                if (runVoiceClips != null && clipIndex < runVoiceClips.Length)
+                    clipToPlay = runVoiceClips[clipIndex];
+                break;
+            case VoiceEffectType.Landing:
+                if (landingVoiceClips != null && clipIndex < landingVoiceClips.Length)
+                    clipToPlay = landingVoiceClips[clipIndex];
+                break;
+        }
+
+        if (clipToPlay != null)
+        {
+            _audioSource.pitch = Random.Range(0.9f, 1.1f); // Slight pitch variation
+            _audioSource.PlayOneShot(clipToPlay, voiceVolume);
+        }
+    }
+
+    private AudioClip GetRandomClip(AudioClip[] clips)
+    {
+        if (clips == null || clips.Length == 0)
+            return null;
+        
+        return clips[Random.Range(0, clips.Length)];
+    }
+
+    private int GetClipIndex(AudioClip[] clips, AudioClip targetClip)
+    {
+        if (clips == null || targetClip == null)
+            return 0;
+        
+        for (int i = 0; i < clips.Length; i++)
+        {
+            if (clips[i] == targetClip)
+                return i;
+        }
+        return 0;
+    }
+
+    private bool CanPlayJumpVoice()
+    {
+        return Time.time - lastJumpVoiceTime >= jumpVoiceCooldown;
+    }
+
+    private bool CanPlayWalkVoice()
+    {
+        return Time.time - lastWalkVoiceTime >= walkVoiceCooldown;
+    }
+
+    private bool CanPlayRunVoice()
+    {
+        return Time.time - lastRunVoiceTime >= runVoiceCooldown;
+    }
+
+    #endregion
+
+    #region Debug Methods
+
+    [ContextMenu("Test Jump Voice")]
+    public void TestJumpVoice()
+    {
+        if (IsOwner)
+        {
+            PlayJumpVoice();
+        }
+        else
+        {
+            Debug.LogWarning("🔊 Only owner can test voice effects!");
+        }
+    }
+
+    [ContextMenu("Test Walk Voice")]
+    public void TestWalkVoice()
+    {
+        if (IsOwner)
+        {
+            isRunning = false;
+            PlayMovementVoice();
+        }
+        else
+        {
+            Debug.LogWarning("🔊 Only owner can test voice effects!");
+        }
+    }
+
+    [ContextMenu("Test Run Voice")]
+    public void TestRunVoice()
+    {
+        if (IsOwner)
+        {
+            isRunning = true;
+            PlayMovementVoice();
+        }
+        else
+        {
+            Debug.LogWarning("🔊 Only owner can test voice effects!");
+        }
+    }
+
+    [ContextMenu("Test Landing Voice")]
+    public void TestLandingVoice()
+    {
+        if (IsOwner)
+        {
+            PlayLandingVoice();
+        }
+        else
+        {
+            Debug.LogWarning("🔊 Only owner can test voice effects!");
+        }
+    }
+
+    [ContextMenu("Debug Voice Settings")]
+    public void DebugVoiceSettings()
+    {
+        Debug.Log($"🔊 === Voice Settings Debug for {gameObject.name} ===");
+        Debug.Log($"🔊 IsOwner: {IsOwner}");
+        Debug.Log($"🔊 AudioSource: {(_audioSource != null ? "Found" : "NULL")}");
+        Debug.Log($"🔊 Jump clips: {(jumpVoiceClips?.Length ?? 0)}");
+        Debug.Log($"🔊 Walk clips: {(walkVoiceClips?.Length ?? 0)}");
+        Debug.Log($"🔊 Run clips: {(runVoiceClips?.Length ?? 0)}");
+        Debug.Log($"🔊 Landing clips: {(landingVoiceClips?.Length ?? 0)}");
+        Debug.Log($"🔊 Voice volume: {voiceVolume}");
+       
+    }
+
+    #endregion
+
     void OnDrawGizmos()
     {
         if (showGroundCheckGizmos && Application.isPlaying)
         {
-            // Use the actual ground check results now that all clients calculate it
             Gizmos.color = isGrounded ? Color.green : Color.red;
             Gizmos.DrawWireSphere(sphereCheckPosition, capsuleRadius * 0.9f);
             
-            // Draw origin point
             Gizmos.color = Color.white;
             Gizmos.DrawWireSphere(groundCheckOrigin, 0.1f);
             
-            // Draw line connecting them
             Gizmos.color = isGrounded ? Color.green : Color.red;
             Gizmos.DrawLine(groundCheckOrigin, sphereCheckPosition);
         }
     }
+}
+
+// Enum for voice effect types
+public enum VoiceEffectType
+{
+    Jump,
+    Walk,
+    Run,
+    Landing
 }

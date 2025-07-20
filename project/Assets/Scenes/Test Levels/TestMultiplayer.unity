@@ -976,6 +976,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1031235578
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1031235579}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1031235579
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031235578}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -14.03497, y: -0.02563, z: 5.1391}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1066442295 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1788539411874861919, guid: 88a4c3c3d7aec5b4a8147a86f1b31160, type: 3}
@@ -1353,6 +1384,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -15.645178, y: -0.22, z: -8.922998}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1877868759
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1877868760}
+  m_Layer: 0
+  m_Name: Spawnpoint (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1877868760
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1877868759}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.86, y: -0.13, z: 4.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1872,6 +1934,22 @@ PrefabInstance:
       propertyPath: spawnPoint
       value: 
       objectReference: {fileID: 607746297}
+    - target: {fileID: 7005688124213446150, guid: 8033cef5d825b0941a5fcbbdb7dfed84, type: 3}
+      propertyPath: dewSpawnPoint
+      value: 
+      objectReference: {fileID: 607746297}
+    - target: {fileID: 7005688124213446150, guid: 8033cef5d825b0941a5fcbbdb7dfed84, type: 3}
+      propertyPath: solSpawnPoint
+      value: 
+      objectReference: {fileID: 1877868760}
+    - target: {fileID: 7005688124213446150, guid: 8033cef5d825b0941a5fcbbdb7dfed84, type: 3}
+      propertyPath: defaultDewPrefab
+      value: 
+      objectReference: {fileID: 1694985764148912473, guid: ab47835861ee26248a060a033a9fd0de, type: 3}
+    - target: {fileID: 7005688124213446150, guid: 8033cef5d825b0941a5fcbbdb7dfed84, type: 3}
+      propertyPath: defaultSolPrefab
+      value: 
+      objectReference: {fileID: 1587621725414511438, guid: a3990db05b5aa2a4eb08bc88c55410b0, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2081,6 +2159,7 @@ SceneRoots:
   - {fileID: 735359932}
   - {fileID: 6079240352915480341}
   - {fileID: 607746297}
+  - {fileID: 1877868760}
   - {fileID: 905780089456709796}
   - {fileID: 346829316}
   - {fileID: 1107661937810116660}
@@ -2088,3 +2167,4 @@ SceneRoots:
   - {fileID: 483737315}
   - {fileID: 4030516205236871240}
   - {fileID: 980210166}
+  - {fileID: 1031235579}

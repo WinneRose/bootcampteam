@@ -238,7 +238,7 @@ MonoBehaviour:
   walkSpeed: 1
   runSpeed: 3
   acceleration: 10
-  runHoldTime: 2
+  runHoldTime: 0.5
   animationSmoothTime: 0.1
   mouseSensitivity: 0.1
   jumpForce: 5
@@ -246,9 +246,24 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  localIsGrounded: 0
+  isGrounded: 0
   showGroundCheckGizmos: 1
   capsuleRadius: 0.4
+  jumpVoiceClips:
+  - {fileID: 8300000, guid: d493fa899a687704891c9e8b983bda79, type: 3}
+  walkVoiceClips:
+  - {fileID: 8300000, guid: 962151d01fd3d344fb37b5574ae22cf4, type: 3}
+  runVoiceClips:
+  - {fileID: 8300000, guid: 962151d01fd3d344fb37b5574ae22cf4, type: 3}
+  landingVoiceClips:
+  - {fileID: 8300000, guid: d493fa899a687704891c9e8b983bda79, type: 3}
+  voiceVolume: 1
+  walkVoiceChance: 0.1
+  runVoiceChance: 0.3
+  walkVoiceCooldown: 1.5
+  runVoiceCooldown: 0.3
+  jumpVoiceCooldown: 0.4
+  minLandingVelocity: 2
 --- !u!114 &3820821296642359343
 MonoBehaviour:
   m_ObjectHideFlags: 0
