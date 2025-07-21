@@ -34,12 +34,18 @@ Sprint 1 – Temel Oluşumlar (150 Puan)
 
 ### Ekran Görüntüleri
 
-> Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir. 👉 
+> Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
+> 👉 📁 [Google Drive Dosyaları - Sprint1](https://drive.google.com/drive/folders/1Gc-xQudCdF6jIv6q675zwVKu4BfnF6g2)
 
-### ✅ Sprint Review
+### Sprint Review
 
-* Tüm görevler sprint board üzerinden takip edilerek ilgili kısımlarında tamamlandı olarak işaretlenmiştir.
-* `screenshots` klasöründe, görev çıktılarını gösteren ekran görüntüleri mevcuttur.
+* Ekip rolleri belirlendi ve kordinasyon hızlı bir şekilde sağlandı.
+* Görev dağılımları yapıldı.
+* Tüm görevler sprint board üzerinden takip edilebilmesi için dökümanlar hazırlandı.
+* Oyun fikri oluşturuldu.
+* Mekanikler belirlendi.
+* Temel dökümanlar hazırlandı.
+* Karakter tasarımı yapıldı.
 
 ### 🔄 Sprint Retrospective
 
@@ -47,6 +53,7 @@ Sprint 1 – Temel Oluşumlar (150 Puan)
 
 * Görev paylaşımı netti; ekip içi sorumluluklar açıktı.
 * Karakter tasarımı, beklentilere tam uygun şekilde tamamlandı.
+* Ekip hızlı bir şekilde uyum sağladı.
 
 #### 🛠️ Ne Geliştirilebilir?
 
