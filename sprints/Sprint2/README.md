@@ -7,7 +7,7 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 > Tüm görevler, puanlamalar ve ilerleme durumları Miro panosunda ayrıntılı olarak takip edilmiştir. Ayrıca ekte görselleri sunulmuştur:
 👉 [Sprint Board - Miro](https://miro.com/app/board/uXjVIk6Cir0=/)
 
-> Puan Tablosu (Tahmin edilen tamamlanacak puan) ![miro1](https://github.com/user-attachments/assets/6e31e285-5996-4cd8-b4d6-6a9d16976208)
+> Tahmin edilen tamamlanacak puan ![miro2](https://github.com/user-attachments/assets/c56accac-89a9-4151-ab98-cf5eed395a62)
 > Tahmin Mntığı ![TahminMantigi](https://github.com/user-attachments/assets/eb13a050-ae17-4957-9e3d-0245ff5611d0)
 > Toplantı Katılımı ve Notları ![miro3](https://github.com/user-attachments/assets/1c38de1a-3125-4f03-a7ff-07df44fd8d6d)
 
@@ -19,10 +19,9 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 
 ## 🎯 Board & Puanlama
 
-> Sprint Board Updates Görseli ![miro2](https://github.com/user-attachments/assets/c56accac-89a9-4151-ab98-cf5eed395a62)
+> Sprint Board Updates Görseli ![miro1](https://github.com/user-attachments/assets/6e31e285-5996-4cd8-b4d6-6a9d16976208)
 
 Sprint 2 – Mekaniklerin ve Tasarımın Geliştirilmesi
-
 * Gündüz/gece döngüsü kurulumu **20**
 * Multiplayer Sistemi **60**
 * Sol ve Dew’in yetenekleri mekanikleri **35**
