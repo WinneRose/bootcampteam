@@ -15,7 +15,7 @@ Tüm görevler, puanlamalar ve ilerleme durumları Miro panosunda ayrıntılı o
 ## 📁 Daily Scrum
 
 > Tüm günlük konuşmaların takibi, drive linkindeki DalilyScrum1 klasörüne eklenmiştir.
->  👉 [Google Drive - Sprint 1 Dosyaları](https://drive.google.com/drive/folders/1Gc-xQudCdF6jIv6q675zwVKu4BfnF6g2)
+>  👉 [Sprint1 Dosyaları - DalilyScrum1 ]([https://drive.google.com/drive/folders/1Gc-xQudCdF6jIv6q675zwVKu4BfnF6g2](https://drive.google.com/drive/folders/1thdZmstKePlDiZ_lWi2K92GHXBhPvfp3))
 
 ### 🎯 Board & Puanlama
 
@@ -35,7 +35,7 @@ Sprint 1 – Temel Oluşumlar (150 Puan)
 ### Ekran Görüntüleri
 
 > Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
-> 👉 📁 [Google Drive Dosyaları - Sprint1](https://drive.google.com/drive/folders/1Gc-xQudCdF6jIv6q675zwVKu4BfnF6g2)
+> 👉  [Sprint1 Dosyaları - sreenshots1 ]([https://drive.google.com/drive/folders/1Gc-xQudCdF6jIv6q675zwVKu4BfnF6g2](https://drive.google.com/drive/folders/1XlKs3i19gzGmhgqVqq8qVKDt8UCnFzKY))
 
 ### Sprint Review
 
