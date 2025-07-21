@@ -1,13 +1,27 @@
-## 📅 Sprint 1 
+## 📅 Sprint 1 – Dökümantasyon
 
 Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili dökümanlar aşağıdaki başlıklar altında sunulmuştur:
 
-### 🔗 Sprint Detayları
+### 🔗 Sprint Notları
 
-Sprint board ve ilgili görev puanlamaları detaylı şekilde Miro panosunda görülebilir:
+Tüm görevler, puanlamalar ve ilerleme durumları Miro panosunda ayrıntılı olarak takip edilmiştir. Ayrıca ekte görselleri sunulmuştur:
 👉 [Sprint Board - Miro](https://miro.com/app/board/uXjVIk6Cir0=/)
 
-### Sprint 1 – Board & Puanlama
+> Tahmin edilen tamamlanacak puan ![Miro1](https://github.com/user-attachments/assets/b5557d95-727a-4275-b7a7-f920499c7a3f)
+> Tahmin Mantığı ![TahminMantigi](https://github.com/user-attachments/assets/e927c9f3-c730-40e9-bea8-36561bf2ebd7)
+> Toplantı Katılımı ve Notları ![miro2](https://github.com/user-attachments/assets/a4044275-fe51-48d4-9b36-3cbdc0f176a9)
+
+
+## 📁 Daily Scrum
+
+> Tüm günlük konuşmaların takibi, drive linkindeki DalilyScrum1 klasörüne eklenmiştir.
+>  👉 [Google Drive - Sprint 1 Dosyaları](https://drive.google.com/drive/folders/1Gc-xQudCdF6jIv6q675zwVKu4BfnF6g2)
+
+### 🎯 Board & Puanlama
+
+> Sprint Board Updates Görseli ![miro3](https://github.com/user-attachments/assets/a4d5f33f-05ab-400e-b546-e9c0e63916d7)
+
+Sprint 1 – Temel Oluşumlar (150 Puan)
 
 * Karakter Modelleri Hazırlanması **30**
 * Unity Proje Oluşturma **10**
@@ -16,21 +30,11 @@ Sprint board ve ilgili görev puanlamaları detaylı şekilde Miro panosunda gö
 * Oyunun Seviyelerinin Planlanması **30**
 * Github Repo Oluşturma **15**
 
-**🎯 Toplam: 150 Puan**
-
-> Notlar: Olgun Çilek, Olmamış Çilek,  İki Kişilik, Doğayı Koru Mesajı, Birlikte Başar
-
-### Sprint Görev Tahmin Mantığı
-
-> Sprintlerdeki görevlerin planlanlanması mekaniklerin içeriği, sistemlerin entegre edilmesi ve kullanılacak kaynakların araştırılmasına dayanmaktadır.
-
-### Daily Scrum
-
-Her günün günlük toplantı notlarına `dailyscrums` klasörü altından ulaşılabilir.
+** 🎯 Toplam: 150 Puan**
 
 ### Ekran Görüntüleri
 
-Sprint boyunca geliştirilen özelliklerin görsel belgeleri `screenshots` klasöründe yer almaktadır.
+> Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir. 👉 
 
 ### ✅ Sprint Review
 
