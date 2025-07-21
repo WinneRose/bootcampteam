@@ -8,7 +8,7 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 👉 [Sprint Board - Miro](https://miro.com/app/board/uXjVIk6Cir0=/)
 
 > Tahmin edilen tamamlanacak puan ![miro2](https://github.com/user-attachments/assets/c56accac-89a9-4151-ab98-cf5eed395a62)
-> Tahmin Mntığı ![TahminMantigi](https://github.com/user-attachments/assets/eb13a050-ae17-4957-9e3d-0245ff5611d0)
+> Tahmin Mantığı ![TahminMantigi](https://github.com/user-attachments/assets/eb13a050-ae17-4957-9e3d-0245ff5611d0)
 > Toplantı Katılımı ve Notları ![miro3](https://github.com/user-attachments/assets/1c38de1a-3125-4f03-a7ff-07df44fd8d6d)
 
 
@@ -35,7 +35,7 @@ Sprint 2 – Mekaniklerin ve Tasarımın Geliştirilmesi
 🎯 Toplam: 350 Puan
 
 
-## Ekran Görselleri Screenshots
+## Ekran Görselleri (Screenshots)
 > Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
 👉  [Google Drive - Sprint 2 Dosyaları](https://drive.google.com/drive/folders/1St7_509ApDp9zxu1QtjrtRsY142eGzzx)
 
