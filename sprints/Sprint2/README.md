@@ -14,8 +14,7 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 
 ## 📁 Daily Scrum
 > Tüm günlük konuşmaların takibi, drive linkindeki DalilyScrum2 klasörüne eklenmiştir.
-👉  [Google Drive - Sprint 2 Dosyaları](https://drive.google.com/drive/folders/1St7_509ApDp9zxu1QtjrtRsY142eGzzx)
-
+👉 [Sprint2 Dosyaları - DailyScrum2](https://drive.google.com/drive/folders/1c1YqHTD1pB-_9j_gtVzN_8fNbAuqv6Y9)
 
 ## 🎯 Board & Puanlama
 
@@ -37,7 +36,7 @@ Sprint 2 – Mekaniklerin ve Tasarımın Geliştirilmesi
 
 ## Ekran Görselleri (Screenshots)
 > Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
-👉 [Google Drive - Sprint2](https://drive.google.com/drive/folders/12_EaXUrOcq3pOCI3jIPVzlTjWOtVgkrT)
+👉 [Sprint2 Dosyaları - Screenshots2](https://drive.google.com/drive/folders/1JJRaBI7V4-lSzzcUPet_P_)
 
 ## Sprint Review
 
