@@ -37,13 +37,15 @@ Sprint 2 – Mekaniklerin ve Tasarımın Geliştirilmesi
 
 ## Ekran Görselleri (Screenshots)
 > Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
-👉  [Google Drive - Sprint 2 Dosyaları](https://drive.google.com/drive/folders/1St7_509ApDp9zxu1QtjrtRsY142eGzzx)
+👉 [Google Drive - Sprint2](https://drive.google.com/drive/folders/12_EaXUrOcq3pOCI3jIPVzlTjWOtVgkrT)
 
 ## Sprint Review
 
 * Tüm görevler Miro panosunda izlenmiş, “Done” sütununa taşınmıştır.
 * Level tasarımı, karakter mekamikleri ve kamera yerleşimi işlevsel olarak tamamlanmış ve Unity sahnesine başarıyla entegre edilmiştir.
 * UI wireframe çizimleri Figma üzerinden hazırlanmış ve paylaşılmıştır.
+* Multiplayer sistem entegre edildi.
+* Karakter animasyonları güncellendi.
 * Versiyon kontrol sisteminde her ekip üyesi aktif olarak commit’lerde bulunmuştur.
 
 ## Sprint Retrospective
