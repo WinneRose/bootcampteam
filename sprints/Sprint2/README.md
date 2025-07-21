@@ -36,7 +36,7 @@ Sprint 2 – Mekaniklerin ve Tasarımın Geliştirilmesi
 
 ## Ekran Görselleri (Screenshots)
 > Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
-👉 [Sprint2 Dosyaları - Screenshots2](https://drive.google.com/drive/folders/1JJRaBI7V4-lSzzcUPet_P_)
+👉 [Sprint2 Dosyaları - Screenshots2](https://drive.google.com/drive/folders/1JJRaBI7V4-lSzzcUPet_Pp_gftuNh33l)
 
 ## Sprint Review
 
