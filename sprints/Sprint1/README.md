@@ -35,7 +35,7 @@ Sprint 1 – Temel Oluşumlar (150 Puan)
 ### Ekran Görüntüleri
 
 > Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
-> 👉  [Sprint1 Dosyaları - screenshots1](https://drive.google.com/drive/folders/1XlKs3i19gzGmhgqVqq8qVKDt8UCnFzKY)
+> 👉  [Sprint1 Dosyaları - Screenshots1](https://drive.google.com/drive/folders/1XlKs3i19gzGmhgqVqq8qVKDt8UCnFzKY)
 
 ### Sprint Review
 
