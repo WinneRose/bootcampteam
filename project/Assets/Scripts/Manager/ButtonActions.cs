@@ -6,15 +6,13 @@ using Unity.Netcode.Transports.UTP;
 public class ButtonActions : MonoBehaviour
 {
     private NetworkManager networkManager;
-    private UIManager uiManager;
+    private UIManager uiManager; // Optional - can be null
     
     [Header("Network Settings")]
     [Tooltip("IP address for client to connect to")]
     public string serverAddress = "127.0.0.1";
     [Tooltip("Port for connection")]
     public ushort serverPort = 7777;
-    
-    // Remove gameSceneName - character selection will handle scene loading
     
     void Start()
     {
@@ -24,14 +22,18 @@ public class ButtonActions : MonoBehaviour
             networkManager = FindObjectOfType<NetworkManager>();
         }
         
+        // UIManager is optional - don't log error if not found
         uiManager = FindObjectOfType<UIManager>();
+        if (uiManager != null)
+        {
+            Debug.Log("UIManager found and connected");
+        }
+        else
+        {
+            Debug.Log("No UIManager found - running without UI callbacks");
+        }
         
         SetupTransport();
-        
-        if (uiManager == null)
-        {
-            Debug.LogError("UIManager not found in scene!");
-        }
         
         if (networkManager == null)
         {
@@ -80,7 +82,10 @@ public class ButtonActions : MonoBehaviour
         }
         
         Debug.Log("Starting Host...");
-        
+        if (uiManager == null)
+        {
+            gameObject.SetActive(false);
+        }
         SetupTransport();
         
         try
@@ -110,6 +115,10 @@ public class ButtonActions : MonoBehaviour
         }
         
         Debug.Log("Starting Client...");
+        if (uiManager == null)
+        {
+            gameObject.SetActive(false);
+        }
         
         SetupTransport();
         
@@ -151,6 +160,7 @@ public class ButtonActions : MonoBehaviour
             Debug.LogError("Client connection timed out!");
             networkManager.Shutdown();
             
+            // Only call UI callback if UIManager exists
             if (uiManager != null)
             {
                 uiManager.OnDisconnected();
@@ -176,6 +186,7 @@ public class ButtonActions : MonoBehaviour
         {
             Debug.Log("Local client disconnected");
             
+            // Only call UI callback if UIManager exists
             if (uiManager != null)
             {
                 uiManager.OnDisconnected();
@@ -191,6 +202,7 @@ public class ButtonActions : MonoBehaviour
             networkManager.Shutdown();
         }
         
+        // Only call UI callback if UIManager exists
         if (uiManager != null)
         {
             uiManager.OnDisconnected();
@@ -213,6 +225,7 @@ public class ButtonActions : MonoBehaviour
         Debug.Log($"Is Connected Client: {networkManager.IsConnectedClient}");
         Debug.Log($"Local Client ID: {networkManager.LocalClientId}");
         Debug.Log($"Connected Clients Count: {networkManager.ConnectedClients.Count}");
+        Debug.Log($"UIManager: {(uiManager != null ? "Present" : "Not Found")}");
         
         if (networkManager.NetworkConfig.NetworkTransport != null)
         {

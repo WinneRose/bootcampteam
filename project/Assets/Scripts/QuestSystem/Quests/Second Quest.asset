@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b6bf6a2d04424e47b9bd1a067d604d2, type: 3}
-  m_Name: test
+  m_Name: Second Quest
   m_EditorClassIdentifier: 
-  questName: tested quest
-  questDescription: etete
+  questName: Second Quest
+  questDescription: Second Quest
   questType: time
-  isTimeBased: 1
-  timeInMinute: 2
-  isCollection: 0
-  collectionCount: 0
-  collectionNameTag: 
+  isTimeBased: 0
+  timeInMinute: 0
+  isCollection: 1
+  collectionCount: 2
+  collectionNameTag: Coin

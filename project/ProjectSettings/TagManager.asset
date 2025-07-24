@@ -10,6 +10,7 @@ TagManager:
   - TestObject
   - waterProjectile
   - solarProjectile
+  - Coin
   layers:
   - Default
   - TransparentFX

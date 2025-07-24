@@ -10,10 +10,6 @@ namespace UI
         public Light dewPointLight;
         public Light solPointLight;
         
-        [Header("Character Settings")]
-        public Button dewButton;
-        public Button solButton;
-        
         [Header("Checkbox Images")]
         public Image dewCheckbox;
         public Image solCheckbox;

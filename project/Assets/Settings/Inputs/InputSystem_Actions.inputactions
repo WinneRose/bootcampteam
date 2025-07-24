@@ -610,12 +610,12 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "QuestPanel",
+                    "name": "Toggle Quest Panel",
                     "type": "Button",
                     "id": "df2879ca-f15b-4cb0-b81c-7ef6b23c572b",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "Press",
+                    "interactions": "",
                     "initialStateCheck": false
                 }
             ],
@@ -1041,11 +1041,11 @@
                 {
                     "name": "",
                     "id": "1edb066b-70a6-42d4-89fa-ab04dccd361a",
-                    "path": "<Keyboard>/q",
-                    "interactions": "",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "QuestPanel",
+                    "action": "Toggle Quest Panel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

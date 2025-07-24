@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b6bf6a2d04424e47b9bd1a067d604d2, type: 3}
-  m_Name: NewQuest
+  m_Name: First Quest
   m_EditorClassIdentifier: 
-  questName: Test
-  questDescription: Testt
+  questName: First Quest
+  questDescription: First Quest
   questType: time
   isTimeBased: 1
-  timeInMinute: 1
+  timeInMinute: 0.2
   isCollection: 0
   collectionCount: 0
   collectionNameTag: 
