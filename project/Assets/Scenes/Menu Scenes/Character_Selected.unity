@@ -8579,7 +8579,7 @@ MonoBehaviour:
   checkboxActive: {fileID: 21300000, guid: f2cbbdb1fa431e5498375c3ef572cf96, type: 3}
   checkboxPassive: {fileID: 21300000, guid: f7fbcfa572b59634aab4af0b9460a150, type: 3}
   startGameButton: {fileID: 1661957251}
-  gameSceneName: TestMultiplayer
+  gameSceneName: RhythmOfStream
   autoAssignHostToDew: 1
   autoAssignClientToSol: 1
 --- !u!4 &1643459394
