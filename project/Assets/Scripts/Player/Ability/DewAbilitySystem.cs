@@ -225,36 +225,24 @@ public class DewAbilitySystem : NetworkBehaviour
                 Debug.Log($"DewAbilitySystem: Total water: {currentWaterCapacity:F1}/{maxWaterCapacity}");
         }
         
-        // Check if water source was depleted - ONLY destroy if NOT regenerable
-        if (nearestWaterCollectionZone != null && nearestWaterCollectionZone.IsWaterDepleted())
+        // Check if water source was depleted and stop charging if it can't provide water anymore
+        if (nearestWaterCollectionZone != null && !nearestWaterCollectionZone.CanProvideWater())
         {
-            if (!nearestWaterCollectionZone.IsCanRegenerable())
-            {
-                if (showDebugInfo)
-                    Debug.Log($"DewAbilitySystem: Non-regenerable water source {nearestWaterCollectionZone.name} was depleted and will be destroyed");
-                
-                // Destroy the depleted NON-REGENERABLE water source
-                Destroy(nearestWaterCollectionZone.gameObject);
-                
-                // Clear references
-                nearestWaterSource = null;
-                nearestWaterCollectionZone = null;
-                nearestWaterDistance = -1f;
-                isInWaterZone = false;
-                
-                // Stop charging since source is gone
-                StopCharging();
-            }
-            else
-            {
-                if (showDebugInfo)
-                    Debug.Log($"DewAbilitySystem: Regenerable water source {nearestWaterCollectionZone.name} was depleted but will regenerate - stopping collection");
-                
-                // Don't destroy regenerable sources, just stop charging
-                StopCharging();
-            }
+            if (showDebugInfo)
+                Debug.Log($"DewAbilitySystem: Water source {nearestWaterCollectionZone.name} can no longer provide water - stopping collection");
+            
+            // Clear references and stop charging
+            // Note: Don't destroy the GameObject - let WaterCollectionZone handle its own lifecycle
+            nearestWaterSource = null;
+            nearestWaterCollectionZone = null;
+            nearestWaterDistance = -1f;
+            isInWaterZone = false;
+            
+            // Stop charging since source can't provide water
+            StopCharging();
         }
     }
+    
     private void SyncNetworkVariables()
     {
         // Sync local state with network variables

@@ -47,7 +47,6 @@ public static class CharacterSelectionManager
         SelectionData.dewPlayerID = playerId;
         SelectionData.dewPrefab = prefab;
         CreatePersistentObject();
-        Debug.Log($"Set Dew selection: Player {playerId}");
     }
     
     public static void SetSolSelection(ulong playerId, GameObject prefab)
@@ -56,7 +55,6 @@ public static class CharacterSelectionManager
         SelectionData.solPlayerID = playerId;
         SelectionData.solPrefab = prefab;
         CreatePersistentObject();
-        Debug.Log($"Set Sol selection: Player {playerId}");
     }
     
     private static void CreatePersistentObject()
@@ -65,7 +63,6 @@ public static class CharacterSelectionManager
         {
             _persistentObject = new GameObject("CharacterSelectionPersistence");
             Object.DontDestroyOnLoad(_persistentObject);
-            Debug.Log("Created persistent object for character selection data");
         }
     }
     
@@ -77,7 +74,6 @@ public static class CharacterSelectionManager
             Object.Destroy(_persistentObject);
             _persistentObject = null;
         }
-        Debug.Log("Cleared all character selections");
     }
     
     public static bool HasValidSelections()
@@ -103,6 +99,7 @@ public class GameManager : NetworkBehaviour
     [Header("Settings")]
     public bool autoSpawnOnSceneLoad = true;
     public float spawnDelay = 1f;
+    public float clientWaitTime = 2f; // Additional wait for clients
     
     // Network variables to track spawned players
     private NetworkVariable<bool> _dewSpawned = new NetworkVariable<bool>(false);
@@ -114,43 +111,76 @@ public class GameManager : NetworkBehaviour
     
     public override void OnNetworkSpawn()
     {
-        Debug.Log("🎮 GameManager: OnNetworkSpawn called");
-        
-        if (IsServer && autoSpawnOnSceneLoad)
+        if (IsServer)
         {
-            Debug.Log($"🎮 GameManager: Will spawn players in {spawnDelay} seconds");
-            // Delay to ensure everything is ready
-            StartCoroutine(DelayedSpawn());
+            // Wait for all clients to connect before spawning
+            if (autoSpawnOnSceneLoad)
+            {
+                StartCoroutine(WaitForClientsAndSpawn());
+            }
         }
     }
     
-    private IEnumerator DelayedSpawn()
+    private IEnumerator WaitForClientsAndSpawn()
     {
+        // Wait for spawn delay
         yield return new WaitForSeconds(spawnDelay);
         
-        Debug.Log("🎮 GameManager: Starting delayed spawn process");
+        // Additional wait for clients to fully load
+        yield return new WaitForSeconds(clientWaitTime);
+        
+        // Ensure spawn points are valid before spawning
+        ValidateSpawnPoints();
+        
         SpawnPlayersFromSelection();
+    }
+    
+    private void ValidateSpawnPoints()
+    {
+        if (dewSpawnPoint == null)
+        {
+            Debug.LogError("DEW SPAWN POINT IS NULL! Looking for fallback...");
+            GameObject dewSpawn = GameObject.Find("DewSpawnPoint");
+            if (dewSpawn != null)
+            {
+                dewSpawnPoint = dewSpawn.transform;
+                Debug.Log($"Found fallback Dew spawn point: {dewSpawn.name}");
+            }
+        }
+        
+        if (solSpawnPoint == null)
+        {
+            Debug.LogError("SOL SPAWN POINT IS NULL! Looking for fallback...");
+            GameObject solSpawn = GameObject.Find("SolSpawnPoint");
+            if (solSpawn != null)
+            {
+                solSpawnPoint = solSpawn.transform;
+                Debug.Log($"Found fallback Sol spawn point: {solSpawn.name}");
+            }
+        }
+        
+        // Final validation
+        if (dewSpawnPoint != null)
+        {
+            Debug.Log($"Dew spawn point validated: {dewSpawnPoint.name} at {dewSpawnPoint.position}");
+        }
+        if (solSpawnPoint != null)
+        {
+            Debug.Log($"Sol spawn point validated: {solSpawnPoint.name} at {solSpawnPoint.position}");
+        }
     }
     
     private void SpawnPlayersFromSelection()
     {
-        Debug.Log("🎮 GameManager: === SPAWNING PLAYERS FROM SELECTION ===");
+        if (!IsServer) return;
         
-        // Get character selection data
         CharacterSelectionData selectionData = CharacterSelectionManager.SelectionData;
         
-        if (selectionData == null)
-        {
-            Debug.LogWarning("🎮 No character selection data found! Using fallback spawning...");
-            SpawnPlayersFallback();
-            return;
-        }
+        Debug.Log($"Spawning players from selection. Connected clients: {NetworkManager.Singleton.ConnectedClients.Count}");
         
-        Debug.Log($"🎮 Selection data: {selectionData}");
-        
-        if (!CharacterSelectionManager.HasValidSelections())
+        if (selectionData == null || !CharacterSelectionManager.HasValidSelections())
         {
-            Debug.LogWarning("🎮 Invalid selection data! Using fallback spawning...");
+            Debug.Log("No valid selection data, using fallback spawn");
             SpawnPlayersFallback();
             return;
         }
@@ -160,11 +190,12 @@ public class GameManager : NetworkBehaviour
         {
             if (IsClientConnected(selectionData.dewPlayerID))
             {
+                Debug.Log($"Spawning Dew for player {selectionData.dewPlayerID}");
                 SpawnCharacterForPlayer(selectionData.dewPlayerID, "Dew", selectionData.dewPrefab ?? defaultDewPrefab);
             }
             else
             {
-                Debug.LogWarning($"🎮 Dew player {selectionData.dewPlayerID} is not connected!");
+                Debug.LogWarning($"Dew player {selectionData.dewPlayerID} is not connected!");
             }
         }
         
@@ -173,11 +204,12 @@ public class GameManager : NetworkBehaviour
         {
             if (IsClientConnected(selectionData.solPlayerID))
             {
+                Debug.Log($"Spawning Sol for player {selectionData.solPlayerID}");
                 SpawnCharacterForPlayer(selectionData.solPlayerID, "Sol", selectionData.solPrefab ?? defaultSolPrefab);
             }
             else
             {
-                Debug.LogWarning($"🎮 Sol player {selectionData.solPlayerID} is not connected!");
+                Debug.LogWarning($"Sol player {selectionData.solPlayerID} is not connected!");
             }
         }
     }
@@ -185,36 +217,31 @@ public class GameManager : NetworkBehaviour
     private bool IsClientConnected(ulong clientId)
     {
         bool isConnected = NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId);
-        Debug.Log($"🎮 Client {clientId} connected: {isConnected}");
+        Debug.Log($"Client {clientId} connected: {isConnected}");
         return isConnected;
     }
     
     private void SpawnPlayersFallback()
     {
-        Debug.Log("🎮 GameManager: === USING FALLBACK SPAWNING ===");
-        
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
-        Debug.Log($"🎮 Connected clients count: {connectedClients.Count}");
+        Debug.Log($"Fallback spawn for {connectedClients.Count} connected clients");
         
         int clientIndex = 0;
         foreach (var client in connectedClients)
         {
             ulong clientId = client.Key;
+            Debug.Log($"Processing client {clientId} (index {clientIndex})");
             
             if (clientIndex == 0)
             {
-                // First client (usually host) becomes Dew
                 SpawnCharacterForPlayer(clientId, "Dew", defaultDewPrefab);
             }
             else if (clientIndex == 1)
             {
-                // Second client becomes Sol
                 SpawnCharacterForPlayer(clientId, "Sol", defaultSolPrefab);
             }
             
             clientIndex++;
-            
-            // Only spawn for first 2 clients
             if (clientIndex >= 2) break;
         }
     }
@@ -223,133 +250,150 @@ public class GameManager : NetworkBehaviour
     {
         if (prefab == null)
         {
-            Debug.LogError($"🎮 No prefab assigned for {characterType} character!");
+            Debug.LogError($"No prefab assigned for {characterType} character!");
             return;
         }
         
         // Check if already spawned
         if (characterType == "Dew" && _dewSpawned.Value)
         {
-            Debug.LogWarning($"🎮 Dew character already spawned!");
+            Debug.Log($"Dew already spawned, skipping");
             return;
         }
-        
         if (characterType == "Sol" && _solSpawned.Value)
         {
-            Debug.LogWarning($"🎮 Sol character already spawned!");
+            Debug.Log($"Sol already spawned, skipping");
             return;
         }
         
-        // Determine spawn point with detailed debugging
-        Transform spawnPoint = null;
-        if (characterType == "Dew")
-        {
-            spawnPoint = dewSpawnPoint;
-            Debug.Log($"🎮 Dew spawn point: {(dewSpawnPoint != null ? dewSpawnPoint.name + " at " + dewSpawnPoint.position : "NULL")}");
-        }
-        else if (characterType == "Sol")
-        {
-            spawnPoint = solSpawnPoint;
-            Debug.Log($"🎮 Sol spawn point: {(solSpawnPoint != null ? solSpawnPoint.name + " at " + solSpawnPoint.position : "NULL")}");
-        }
+        // Determine spawn point with better error handling
+        Transform spawnPoint = characterType == "Dew" ? dewSpawnPoint : solSpawnPoint;
         
         Vector3 spawnPosition;
         Quaternion spawnRotation;
         
         if (spawnPoint == null)
         {
-            Debug.LogError($"🎮 ❌ NO SPAWN POINT ASSIGNED FOR {characterType}!");
-            Debug.LogError($"🎮 Please assign {characterType}SpawnPoint in GameManager inspector!");
-            
-            // Use GameManager position as emergency fallback
-            spawnPosition = transform.position;
+            Debug.LogError($"NO SPAWN POINT ASSIGNED FOR {characterType}! Using GameManager position as fallback.");
+            spawnPosition = transform.position + (characterType == "Dew" ? Vector3.left * 2f : Vector3.right * 2f);
             spawnRotation = transform.rotation;
-            Debug.LogWarning($"🎮 Using GameManager fallback position: {spawnPosition}");
         }
         else
         {
             spawnPosition = spawnPoint.position;
             spawnRotation = spawnPoint.rotation;
-            Debug.Log($"🎮 ✅ Using {characterType} spawn point: {spawnPosition}");
+            Debug.Log($"Spawning {characterType} at {spawnPoint.name}: {spawnPosition}");
         }
-        
-        Debug.Log($"🎮 === SPAWNING {characterType} CHARACTER ===");
-        Debug.Log($"🎮 Client ID: {clientId}");
-        Debug.Log($"🎮 Prefab: {prefab.name}");
-        Debug.Log($"🎮 Spawn Point Object: {(spawnPoint != null ? spawnPoint.name : "NULL")}");
-        Debug.Log($"🎮 Final Position: {spawnPosition}");
-        Debug.Log($"🎮 Final Rotation: {spawnRotation}");
         
         try
         {
             GameObject playerInstance = Instantiate(prefab, spawnPosition, spawnRotation);
             
-            // Verify the spawned position
-            Debug.Log($"🎮 Player instantiated at: {playerInstance.transform.position}");
-            
-            // Get or add NetworkObject component
             NetworkObject networkObject = playerInstance.GetComponent<NetworkObject>();
             if (networkObject == null)
             {
-                Debug.LogError($"🎮 Character prefab {prefab.name} does not have NetworkObject component!");
+                Debug.LogError($"Character prefab {prefab.name} does not have NetworkObject component!");
                 Destroy(playerInstance);
                 return;
             }
             
-            // Spawn with ownership to the specific client
+            // Spawn with ownership for the specific client
             networkObject.SpawnWithOwnership(clientId);
-            
-            // Verify the position after network spawn
-            Debug.Log($"🎮 Player position after network spawn: {playerInstance.transform.position}");
             
             // Store references
             if (characterType == "Dew")
             {
                 _spawnedDewPlayer = playerInstance;
                 _dewSpawned.Value = true;
-                Debug.Log($"✅ Dew character spawned for client {clientId} at {playerInstance.transform.position}");
+                Debug.Log($"Dew spawned successfully for client {clientId} at {spawnPosition}");
             }
             else if (characterType == "Sol")
             {
                 _spawnedSolPlayer = playerInstance;
                 _solSpawned.Value = true;
-                Debug.Log($"✅ Sol character spawned for client {clientId} at {playerInstance.transform.position}");
+                Debug.Log($"Sol spawned successfully for client {clientId} at {spawnPosition}");
             }
             
-            // Notify clients about the spawn
+            // Notify all clients about the spawn
             NotifyPlayerSpawnedClientRpc(clientId, characterType, spawnPosition);
             
-            // Check for PlayerNetworkManager
-            var playerNetworkManager = playerInstance.GetComponent<PlayerNetworkManager>();
-            if (playerNetworkManager != null)
-            {
-                Debug.Log($"🎮 PlayerNetworkManager found on {characterType} character");
-            }
-            else
-            {
-                Debug.LogWarning($"🎮 No PlayerNetworkManager found on {characterType} character");
-            }
+            // Force position update to ensure it's correct
+            StartCoroutine(ForcePositionUpdate(playerInstance, spawnPosition));
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"🎮 Failed to spawn {characterType} character: {e.Message}");
+            Debug.LogError($"Failed to spawn {characterType} character: {e.Message}");
+        }
+    }
+    
+    private IEnumerator ForcePositionUpdate(GameObject playerInstance, Vector3 correctPosition)
+    {
+        // Wait a frame then force the position
+        yield return null;
+        
+        if (playerInstance != null)
+        {
+            playerInstance.transform.position = correctPosition;
+            
+            // If it has a CharacterController, disable and re-enable it
+            CharacterController cc = playerInstance.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cc.enabled = false;
+                yield return null;
+                cc.enabled = true;
+            }
+            
+            Debug.Log($"Forced position update to {correctPosition} for {playerInstance.name}");
         }
     }
     
     [ClientRpc]
     private void NotifyPlayerSpawnedClientRpc(ulong clientId, string characterType, Vector3 spawnPosition)
     {
-        Debug.Log($"🎮 Player spawned notification: Client {clientId} as {characterType} at {spawnPosition}");
+        Debug.Log($"[CLIENT] Player spawned notification: {characterType} for client {clientId} at {spawnPosition}");
+        
+        // Find the spawned player on the client
+        StartCoroutine(ValidateClientSpawnPosition(clientId, characterType, spawnPosition));
     }
     
-    // Public methods for manual spawning (useful for testing or special cases)
+    private IEnumerator ValidateClientSpawnPosition(ulong clientId, string characterType, Vector3 expectedPosition)
+    {
+        // Wait a moment for the object to be fully spawned
+        yield return new WaitForSeconds(0.5f);
+        
+        GameObject spawnedPlayer = GetPlayerByClientId(clientId);
+        if (spawnedPlayer != null)
+        {
+            Vector3 actualPosition = spawnedPlayer.transform.position;
+            float distance = Vector3.Distance(actualPosition, expectedPosition);
+            
+            if (distance > 1f) // If position is significantly off
+            {
+                Debug.LogWarning($"[CLIENT] {characterType} position mismatch! Expected: {expectedPosition}, Actual: {actualPosition}, Distance: {distance}");
+                
+                // If this is our local player, try to correct the position
+                if (NetworkManager.Singleton.LocalClientId == clientId)
+                {
+                    spawnedPlayer.transform.position = expectedPosition;
+                    Debug.Log($"[CLIENT] Corrected local player position to {expectedPosition}");
+                }
+            }
+            else
+            {
+                Debug.Log($"[CLIENT] {characterType} position validated: {actualPosition}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[CLIENT] Could not find spawned player for client {clientId}");
+        }
+    }
+    
+    // Public methods for manual spawning
     public void SpawnAsHost()
     {
-        if (!IsServer)
-        {
-            Debug.LogWarning("🎮 SpawnAsHost called on non-server!");
-            return;
-        }
+        if (!IsServer) return;
         
         ulong hostClientId = NetworkManager.Singleton.LocalClientId;
         SpawnCharacterForPlayer(hostClientId, "Dew", defaultDewPrefab);
@@ -357,13 +401,8 @@ public class GameManager : NetworkBehaviour
     
     public void SpawnAsClient()
     {
-        if (!IsServer)
-        {
-            Debug.LogWarning("🎮 SpawnAsClient called on non-server!");
-            return;
-        }
+        if (!IsServer) return;
         
-        // Find the first non-host client
         foreach (var client in NetworkManager.Singleton.ConnectedClients)
         {
             if (client.Key != NetworkManager.Singleton.LocalClientId)
@@ -382,128 +421,146 @@ public class GameManager : NetworkBehaviour
     public GameObject GetDewPlayer() => _spawnedDewPlayer;
     public GameObject GetSolPlayer() => _spawnedSolPlayer;
     
-    // Find player by client ID
     public GameObject GetPlayerByClientId(ulong clientId)
     {
-        // Check if it's the Dew player
-        if (_spawnedDewPlayer != null)
+        // Check all NetworkObjects to find the one owned by this client
+        foreach (var networkObject in FindObjectsOfType<NetworkObject>())
         {
-            NetworkObject dewNetObj = _spawnedDewPlayer.GetComponent<NetworkObject>();
-            if (dewNetObj != null && dewNetObj.OwnerClientId == clientId)
+            if (networkObject.OwnerClientId == clientId)
             {
-                return _spawnedDewPlayer;
-            }
-        }
-        
-        // Check if it's the Sol player
-        if (_spawnedSolPlayer != null)
-        {
-            NetworkObject solNetObj = _spawnedSolPlayer.GetComponent<NetworkObject>();
-            if (solNetObj != null && solNetObj.OwnerClientId == clientId)
-            {
-                return _spawnedSolPlayer;
+                // Check if it's a player object (has expected components)
+                if (networkObject.gameObject.GetComponent<CharacterController>() != null ||
+                    networkObject.gameObject.name.Contains("Dew") ||
+                    networkObject.gameObject.name.Contains("Sol"))
+                {
+                    return networkObject.gameObject;
+                }
             }
         }
         
         return null;
     }
     
-    // Debug methods
-    [ContextMenu("Debug Spawn Points")]
+    // Context Menu Debug Methods
+    [ContextMenu("Debug: Show Spawn Points")]
     public void DebugSpawnPoints()
     {
-        Debug.Log("🎮 === SPAWN POINTS DEBUG ===");
+        Debug.Log("=== SPAWN POINTS DEBUG ===");
         
         if (dewSpawnPoint != null)
         {
-            Debug.Log($"🎮 Dew Spawn Point: {dewSpawnPoint.name}");
-            Debug.Log($"🎮   Position: {dewSpawnPoint.position}");
-            Debug.Log($"🎮   Rotation: {dewSpawnPoint.rotation}");
-            Debug.Log($"🎮   Active: {dewSpawnPoint.gameObject.activeInHierarchy}");
+            Debug.Log($"Dew Spawn Point: {dewSpawnPoint.name}");
+            Debug.Log($"  Position: {dewSpawnPoint.position}");
+            Debug.Log($"  Rotation: {dewSpawnPoint.rotation}");
+            Debug.Log($"  Active: {dewSpawnPoint.gameObject.activeInHierarchy}");
         }
         else
         {
-            Debug.LogError("🎮 ❌ DEW SPAWN POINT IS NULL!");
+            Debug.LogError("DEW SPAWN POINT IS NULL!");
         }
         
         if (solSpawnPoint != null)
         {
-            Debug.Log($"🎮 Sol Spawn Point: {solSpawnPoint.name}");
-            Debug.Log($"🎮   Position: {solSpawnPoint.position}");
-            Debug.Log($"🎮   Rotation: {solSpawnPoint.rotation}");
-            Debug.Log($"🎮   Active: {solSpawnPoint.gameObject.activeInHierarchy}");
+            Debug.Log($"Sol Spawn Point: {solSpawnPoint.name}");
+            Debug.Log($"  Position: {solSpawnPoint.position}");
+            Debug.Log($"  Rotation: {solSpawnPoint.rotation}");
+            Debug.Log($"  Active: {solSpawnPoint.gameObject.activeInHierarchy}");
         }
         else
         {
-            Debug.LogError("🎮 ❌ SOL SPAWN POINT IS NULL!");
+            Debug.LogError("SOL SPAWN POINT IS NULL!");
         }
         
-        Debug.Log($"🎮 GameManager Position: {transform.position}");
+        Debug.Log($"GameManager Position: {transform.position}");
     }
     
-    [ContextMenu("Debug Spawn State")]
+    [ContextMenu("Debug: Show Spawn State")]
     public void DebugSpawnState()
     {
-        Debug.Log("🎮 === Game Manager Spawn State ===");
-        Debug.Log($"🎮 Is Server: {IsServer}");
-        Debug.Log($"🎮 Dew Spawned: {_dewSpawned.Value}");
-        Debug.Log($"🎮 Sol Spawned: {_solSpawned.Value}");
-        Debug.Log($"🎮 Dew Player Object: {(_spawnedDewPlayer != null ? _spawnedDewPlayer.name : "null")}");
-        Debug.Log($"🎮 Sol Player Object: {(_spawnedSolPlayer != null ? _spawnedSolPlayer.name : "null")}");
+        Debug.Log("=== Game Manager Spawn State ===");
+        Debug.Log($"Is Server: {IsServer}");
+        Debug.Log($"Dew Spawned: {_dewSpawned.Value}");
+        Debug.Log($"Sol Spawned: {_solSpawned.Value}");
+        Debug.Log($"Dew Player Object: {(_spawnedDewPlayer != null ? _spawnedDewPlayer.name : "null")}");
+        Debug.Log($"Sol Player Object: {(_spawnedSolPlayer != null ? _spawnedSolPlayer.name : "null")}");
         
-        // Debug selection data
         CharacterSelectionData selectionData = CharacterSelectionManager.SelectionData;
         if (selectionData != null)
         {
-            Debug.Log($"🎮 Selection Data: {selectionData}");
-            Debug.Log($"🎮 Has Valid Selections: {CharacterSelectionManager.HasValidSelections()}");
+            Debug.Log($"Selection Data: {selectionData}");
+            Debug.Log($"Has Valid Selections: {CharacterSelectionManager.HasValidSelections()}");
         }
         else
         {
-            Debug.Log("🎮 No selection data available");
+            Debug.Log("No selection data available");
         }
         
-        // Debug connected clients
         if (NetworkManager.Singleton != null)
         {
-            Debug.Log($"🎮 Connected Clients: {NetworkManager.Singleton.ConnectedClients.Count}");
+            Debug.Log($"Connected Clients: {NetworkManager.Singleton.ConnectedClients.Count}");
             foreach (var client in NetworkManager.Singleton.ConnectedClients)
             {
-                Debug.Log($"🎮   Client {client.Key}");
+                Debug.Log($"  Client {client.Key}");
             }
         }
     }
     
-    [ContextMenu("Force Spawn All Players")]
-    public void ForceSpawnAllPlayers()
+    [ContextMenu("Debug: Show All Spawned NetworkObjects")]
+    public void DebugShowAllNetworkObjects()
+    {
+        Debug.Log("=== ALL NETWORK OBJECTS ===");
+        var networkObjects = FindObjectsOfType<NetworkObject>();
+        
+        foreach (var netObj in networkObjects)
+        {
+            Debug.Log($"NetworkObject: {netObj.name}");
+            Debug.Log($"  Owner: {netObj.OwnerClientId}");
+            Debug.Log($"  Position: {netObj.transform.position}");
+            Debug.Log($"  IsSpawned: {netObj.IsSpawned}");
+            Debug.Log($"  Has CharacterController: {netObj.GetComponent<CharacterController>() != null}");
+        }
+    }
+    
+    [ContextMenu("Debug: Force Validate Spawn Points")]
+    public void DebugForceValidateSpawnPoints()
+    {
+        ValidateSpawnPoints();
+    }
+    
+    [ContextMenu("Debug: Force Spawn All Players")]
+    public void DebugForceSpawnAllPlayers()
     {
         if (!IsServer)
         {
-            Debug.LogWarning("🎮 Can only force spawn on server!");
+            Debug.LogWarning("Can only force spawn on server!");
             return;
         }
         
+        Debug.Log("Force spawning all players...");
+        ValidateSpawnPoints();
         SpawnPlayersFromSelection();
     }
     
-    [ContextMenu("Force Fallback Spawn")]
-    public void ForceFallbackSpawn()
+    [ContextMenu("Debug: Force Fallback Spawn")]
+    public void DebugForceFallbackSpawn()
     {
         if (!IsServer)
         {
-            Debug.LogWarning("🎮 Can only force spawn on server!");
+            Debug.LogWarning("Can only force spawn on server!");
             return;
         }
         
+        Debug.Log("Force fallback spawning...");
+        ValidateSpawnPoints();
         SpawnPlayersFallback();
     }
     
-    [ContextMenu("Clear All Spawned Players")]
-    public void ClearAllSpawnedPlayers()
+    [ContextMenu("Debug: Clear All Spawned Players")]
+    public void DebugClearAllSpawnedPlayers()
     {
         if (!IsServer)
         {
-            Debug.LogWarning("🎮 Can only clear spawned players on server!");
+            Debug.LogWarning("Can only clear spawned players on server!");
             return;
         }
         
@@ -529,6 +586,13 @@ public class GameManager : NetworkBehaviour
             _solSpawned.Value = false;
         }
         
-        Debug.Log("🎮 All spawned players cleared");
+        Debug.Log("All spawned players cleared");
+    }
+    
+    [ContextMenu("Debug: Clear Character Selection Data")]
+    public void DebugClearCharacterSelectionData()
+    {
+        CharacterSelectionManager.ClearSelections();
+        Debug.Log("Character selection data cleared");
     }
 }

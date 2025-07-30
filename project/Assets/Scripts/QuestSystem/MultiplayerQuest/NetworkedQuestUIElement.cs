@@ -8,7 +8,7 @@ public class NetworkedQuestUIElement : MonoBehaviour
     [SerializeField] private TextMeshProUGUI questTitle;
     [SerializeField] private TextMeshProUGUI questDescription;
     [SerializeField] private TextMeshProUGUI progressText;
-    [SerializeField] private TextMeshProUGUI timeText;        // NEW: Time display
+    [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private Slider progressBar;
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Image progressBarFill;
@@ -17,28 +17,24 @@ public class NetworkedQuestUIElement : MonoBehaviour
     [SerializeField] private Color inProgressColor = Color.yellow;
     [SerializeField] private Color completedColor = Color.green;
     [SerializeField] private Color failedColor = Color.red;
-    [SerializeField] private Color urgentColor = Color.orange;  // NEW: For low time warning
+    [SerializeField] private Color urgentColor = Color.orange;
 
     private NetworkedQuestInstance currentQuest;
+    private bool isPlayingCompletionEffect = false;
+    private bool isPlayingFailureEffect = false;
 
     public void Setup(NetworkedQuestInstance quest)
     {
         currentQuest = quest;
         
-        // Set basic information
         if (questTitle != null)
             questTitle.text = quest.GetQuestTitle();
         
         if (questDescription != null)
             questDescription.text = quest.GetQuestDescription();
 
-        // Configure UI based on quest type
         ConfigureUIForQuestType(quest);
-
-        // Set initial progress
         UpdateProgress(quest);
-        
-        // Set initial color
         SetStatusColor(inProgressColor);
     }
 
@@ -46,11 +42,9 @@ public class NetworkedQuestUIElement : MonoBehaviour
     {
         bool showTimer = quest.IsTimeBased();
         
-        // Show/hide timer text
         if (timeText != null)
             timeText.gameObject.SetActive(showTimer);
 
-        // Configure progress bar based on quest type
         if (progressBar != null)
         {
             if (quest.IsCollectionBased())
@@ -66,30 +60,19 @@ public class NetworkedQuestUIElement : MonoBehaviour
                 progressBar.value = 0f;
             }
         }
-
-        Debug.Log($"[QuestUI] Configured for quest: {quest.GetQuestTitle()}, " +
-                 $"Collection: {quest.IsCollectionBased()}, " +
-                 $"Timed: {quest.IsTimeBased()}, " +
-                 $"Timer Visible: {showTimer}");
     }
 
     public void UpdateProgress(NetworkedQuestInstance quest)
     {
         if (quest == null) return;
 
-        // Update progress text and bar
         UpdateProgressDisplay(quest);
-        
-        // Update timer display and bar
         UpdateTimerDisplay(quest);
-
-        // Update colors based on status
         UpdateStatusColors(quest);
     }
 
     private void UpdateProgressDisplay(NetworkedQuestInstance quest)
     {
-        // Update progress text
         if (progressText != null)
         {
             if (quest.IsCollectionBased())
@@ -98,7 +81,6 @@ public class NetworkedQuestUIElement : MonoBehaviour
             }
             else if (quest.IsTimeBased() && !quest.IsCollectionBased())
             {
-                // Pure time quest
                 progressText.text = $"{Mathf.Ceil(quest.GetTimeRemaining())}s remaining";
             }
             else
@@ -107,7 +89,6 @@ public class NetworkedQuestUIElement : MonoBehaviour
             }
         }
 
-        // Update progress bar
         if (progressBar != null)
         {
             if (quest.IsCollectionBased())
@@ -127,7 +108,6 @@ public class NetworkedQuestUIElement : MonoBehaviour
 
         float timeRemaining = quest.GetTimeRemaining();
         
-        // Update time text with nice formatting
         int minutes = Mathf.FloorToInt(timeRemaining / 60f);
         int seconds = Mathf.FloorToInt(timeRemaining % 60f);
         
@@ -140,7 +120,6 @@ public class NetworkedQuestUIElement : MonoBehaviour
             timeText.text = $"⏰ {seconds}s";
         }
         
-        // Change color when time is low
         if (timeRemaining <= 30f && !quest.IsCompleted())
         {
             timeText.color = urgentColor;
@@ -165,7 +144,7 @@ public class NetworkedQuestUIElement : MonoBehaviour
         }
         else if (quest.IsTimeBased() && quest.GetTimeRemaining() <= 30f)
         {
-            statusColor = urgentColor;  // Urgent when time is low
+            statusColor = urgentColor;
         }
         else
         {
@@ -177,6 +156,19 @@ public class NetworkedQuestUIElement : MonoBehaviour
 
     public void ShowCompleted()
     {
+        // Prevent multiple completion effects
+        if (isPlayingCompletionEffect) return;
+        
+        // Check if GameObject is active before starting coroutine
+        if (!gameObject.activeInHierarchy)
+        {
+            // Fallback: Just update the UI without animation
+            ShowCompletedImmediate();
+            return;
+        }
+
+        isPlayingCompletionEffect = true;
+        
         SetStatusColor(completedColor);
         
         if (progressText != null)
@@ -188,11 +180,27 @@ public class NetworkedQuestUIElement : MonoBehaviour
         if (progressBar != null)
             progressBar.value = progressBar.maxValue;
 
-        StartCoroutine(FlashEffect(completedColor));
+        // Safely start coroutine
+        StartCoroutine(FlashEffect(completedColor, () => {
+            isPlayingCompletionEffect = false;
+        }));
     }
 
     public void ShowFailed()
     {
+        // Prevent multiple failure effects
+        if (isPlayingFailureEffect) return;
+        
+        // Check if GameObject is active before starting coroutine
+        if (!gameObject.activeInHierarchy)
+        {
+            // Fallback: Just update the UI without animation
+            ShowFailedImmediate();
+            return;
+        }
+
+        isPlayingFailureEffect = true;
+        
         SetStatusColor(failedColor);
         
         if (progressText != null)
@@ -201,7 +209,35 @@ public class NetworkedQuestUIElement : MonoBehaviour
         if (timeText != null && timeText.gameObject.activeSelf)
             timeText.text = "⏰ TIME UP!";
 
-        StartCoroutine(FlashEffect(failedColor));
+        // Safely start coroutine
+        StartCoroutine(FlashEffect(failedColor, () => {
+            isPlayingFailureEffect = false;
+        }));
+    }
+
+    private void ShowCompletedImmediate()
+    {
+        SetStatusColor(completedColor);
+        
+        if (progressText != null)
+            progressText.text = "COMPLETED! ✅";
+        
+        if (timeText != null && timeText.gameObject.activeSelf)
+            timeText.text = "⏰ DONE!";
+        
+        if (progressBar != null)
+            progressBar.value = progressBar.maxValue;
+    }
+
+    private void ShowFailedImmediate()
+    {
+        SetStatusColor(failedColor);
+        
+        if (progressText != null)
+            progressText.text = "FAILED! ❌";
+            
+        if (timeText != null && timeText.gameObject.activeSelf)
+            timeText.text = "⏰ TIME UP!";
     }
 
     private void SetStatusColor(Color color)
@@ -209,7 +245,7 @@ public class NetworkedQuestUIElement : MonoBehaviour
         if (backgroundImage != null)
         {
             Color bgColor = color;
-            bgColor.a = 0.3f; // Make background semi-transparent
+            bgColor.a = 0.3f;
             backgroundImage.color = bgColor;
         }
 
@@ -219,18 +255,90 @@ public class NetworkedQuestUIElement : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator FlashEffect(Color flashColor)
+    private System.Collections.IEnumerator FlashEffect(Color flashColor, System.Action onComplete = null)
     {
+        // Double-check that we're still active when the coroutine runs
+        if (!gameObject.activeInHierarchy)
+        {
+            onComplete?.Invoke();
+            yield break;
+        }
+
         Color originalColor = flashColor;
         
         // Flash effect
         for (int i = 0; i < 3; i++)
         {
+            // Check if still active during each iteration
+            if (!gameObject.activeInHierarchy)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
             SetStatusColor(Color.white);
             yield return new WaitForSeconds(0.15f);
+            
+            // Check again after wait
+            if (!gameObject.activeInHierarchy)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
             
             SetStatusColor(originalColor);
             yield return new WaitForSeconds(0.15f);
         }
+
+        onComplete?.Invoke();
+    }
+
+    // Context Menu Debug Options
+    [ContextMenu("Debug: Show Quest Info")]
+    private void DebugShowQuestInfo()
+    {
+        if (currentQuest != null)
+        {
+            Debug.Log($"=== QUEST UI DEBUG INFO ===");
+            Debug.Log($"Quest Title: {currentQuest.GetQuestTitle()}");
+            Debug.Log($"Quest Description: {currentQuest.GetQuestDescription()}");
+            Debug.Log($"Collection Based: {currentQuest.IsCollectionBased()}");
+            Debug.Log($"Time Based: {currentQuest.IsTimeBased()}");
+            Debug.Log($"Progress: {currentQuest.GetCollectedCount()}/{currentQuest.template.collectionCount}");
+            Debug.Log($"Time Remaining: {currentQuest.GetTimeRemaining():F1}s");
+            Debug.Log($"Completed: {currentQuest.IsCompleted()}");
+            Debug.Log($"Failed: {currentQuest.IsFailed()}");
+            Debug.Log($"GameObject Active: {gameObject.activeInHierarchy}");
+            Debug.Log($"Is Playing Completion Effect: {isPlayingCompletionEffect}");
+            Debug.Log($"Is Playing Failure Effect: {isPlayingFailureEffect}");
+        }
+        else
+        {
+            Debug.Log("No current quest assigned to this UI element!");
+        }
+    }
+
+    [ContextMenu("Debug: Test Completion Animation")]
+    private void DebugTestCompletion()
+    {
+        ShowCompleted();
+    }
+
+    [ContextMenu("Debug: Test Failure Animation")]
+    private void DebugTestFailure()
+    {
+        ShowFailed();
+    }
+
+    [ContextMenu("Debug: Test Immediate Completion")]
+    private void DebugTestImmediateCompletion()
+    {
+        ShowCompletedImmediate();
+    }
+
+    [ContextMenu("Debug: Test Immediate Failure")]
+    private void DebugTestImmediateFailure()
+    {
+        ShowFailedImmediate();
     }
 }

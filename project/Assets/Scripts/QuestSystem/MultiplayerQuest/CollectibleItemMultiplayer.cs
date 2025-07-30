@@ -7,33 +7,23 @@ public class CollectibleItemMultiplayer : NetworkBehaviour
     [SerializeField] private string itemTag = "Coin";
     [SerializeField] private GameObject collectEffect;
     
-    private bool hasBeenCollected = false; // ✅ Prevent double collection
+    private bool hasBeenCollected = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        // ✅ Only allow collection once
         if (hasBeenCollected) return;
         
         if (other.CompareTag("Player"))
         {
-            Debug.Log($"[CollectibleItem] Player touched item with tag: '{itemTag}'");
-            
-            // ✅ Only server processes the collection logic
             if (IsServer)
             {
-                // Check if any quest needs this item
                 if (CanBeCollected())
                 {
-                    CollectItem(other.gameObject);
-                }
-                else
-                {
-                    Debug.Log($"[CollectibleItem] No active quests need '{itemTag}' right now.");
+                    CollectItem();
                 }
             }
             else
             {
-                // ✅ Client requests collection from server
                 RequestCollectionServerRpc();
             }
         }
@@ -42,62 +32,45 @@ public class CollectibleItemMultiplayer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RequestCollectionServerRpc()
     {
-        // ✅ Double-check on server side
         if (hasBeenCollected) return;
         
         if (CanBeCollected())
         {
-            CollectItem(null); // No need for player reference on server
+            CollectItem();
         }
     }
 
     private bool CanBeCollected()
     {
         if (NetworkedQuestManager.Instance == null)
-        {
-            Debug.LogError("[CollectibleItem] NetworkedQuestManager.Instance is null!");
             return false;
-        }
 
         var activeQuests = NetworkedQuestManager.Instance.GetActiveQuests();
         
-        bool canCollect = activeQuests.Any(quest => 
+        return activeQuests.Any(quest => 
             quest.IsCollectionBased() && 
             quest.template.collectionNameTag == itemTag && 
             !quest.IsCompleted() && 
             !quest.IsFailed());
-            
-        Debug.Log($"[CollectibleItem] Can collect '{itemTag}': {canCollect}");
-        return canCollect;
     }
 
-    private void CollectItem(GameObject player)
+    private void CollectItem()
     {
-        // ✅ Mark as collected immediately to prevent double collection
         if (hasBeenCollected) return;
         hasBeenCollected = true;
-        
-        Debug.Log($"[CollectibleItem] ✅ COLLECTING ITEM: '{itemTag}'");
         
         // Show collection effect on all clients
         ShowCollectionEffectClientRpc(transform.position);
 
-        // Report to quest system (server only)
+        // Report to quest system
         if (NetworkedQuestManager.Instance != null)
         {
             NetworkedQuestManager.Instance.ReportItemCollected(itemTag);
-            Debug.Log($"[CollectibleItem] Reported collection to QuestManager");
-        }
-        else
-        {
-            Debug.LogError("[CollectibleItem] QuestManager is null! Cannot report collection!");
         }
 
-        // Remove item (server handles this)
+        // Remove item
         if (IsServer)
         {
-            Debug.Log($"[CollectibleItem] Server despawning item");
-            // Small delay to ensure effect plays
             Invoke(nameof(DespawnItem), 0.1f);
         }
     }
@@ -105,7 +78,6 @@ public class CollectibleItemMultiplayer : NetworkBehaviour
     [ClientRpc]
     private void ShowCollectionEffectClientRpc(Vector3 position)
     {
-        // Show collection effect on all clients
         if (collectEffect != null)
         {
             Instantiate(collectEffect, position, Quaternion.identity);
@@ -120,4 +92,46 @@ public class CollectibleItemMultiplayer : NetworkBehaviour
         }
     }
 
+    // Context Menu Debug Options
+    [ContextMenu("Debug: Force Collect")]
+    private void DebugForceCollect()
+    {
+        if (IsServer)
+        {
+            CollectItem();
+        }
+        else
+        {
+            Debug.Log("Force collect can only be used on server!");
+        }
+    }
+
+    [ContextMenu("Debug: Check Collection Status")]
+    private void DebugCheckCollectionStatus()
+    {
+        Debug.Log($"=== COLLECTIBLE DEBUG INFO ===");
+        Debug.Log($"Item Tag: {itemTag}");
+        Debug.Log($"Has Been Collected: {hasBeenCollected}");
+        Debug.Log($"Can Be Collected: {CanBeCollected()}");
+        Debug.Log($"Is Server: {IsServer}");
+        
+        if (NetworkedQuestManager.Instance != null)
+        {
+            var activeQuests = NetworkedQuestManager.Instance.GetActiveQuests();
+            Debug.Log($"Active Quests Count: {activeQuests.Count}");
+            
+            foreach (var quest in activeQuests)
+            {
+                if (quest.IsCollectionBased())
+                {
+                    bool matches = quest.template.collectionNameTag == itemTag;
+                    Debug.Log($"Quest: {quest.GetQuestTitle()}, Tag: {quest.template.collectionNameTag}, Matches: {matches}");
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("NetworkedQuestManager.Instance is null!");
+        }
+    }
 }

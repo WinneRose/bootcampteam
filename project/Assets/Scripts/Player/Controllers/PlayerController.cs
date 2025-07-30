@@ -104,7 +104,6 @@ public class PlayerController : NetworkBehaviour
         if (_audioSource == null)
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
-            Debug.Log($"🔊 Added AudioSource to {gameObject.name}");
         }
 
         // Configure AudioSource for voice effects
@@ -131,8 +130,6 @@ public class PlayerController : NetworkBehaviour
         // Cursor settings only for owner
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        Debug.Log($"🔊 Voice effects initialized for {gameObject.name} (IsOwner: {IsOwner})");
     }
 
     void FixedUpdate()
@@ -164,7 +161,6 @@ public class PlayerController : NetworkBehaviour
         if (wasFalling && isGrounded && lastVerticalVelocity < minLandingVelocity)
         {
             PlayLandingVoice();
-            Debug.Log($"🔊 Landing detected: velocity was {lastVerticalVelocity:F2}");
         }
 
         // Check for movement state changes
@@ -190,11 +186,6 @@ public class PlayerController : NetworkBehaviour
         
         bool previousGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(sphereCheckPosition, capsuleRadius, groundLayer, QueryTriggerInteraction.Ignore);
-
-        if (previousGrounded != isGrounded && IsOwner)
-        {
-            Debug.Log($"[{gameObject.name}] Ground state changed: {previousGrounded} -> {isGrounded}");
-        }
 
         if (showGroundCheckGizmos)
         {
@@ -302,7 +293,6 @@ public class PlayerController : NetworkBehaviour
         {
             PlayVoiceEffectClientRpc(VoiceEffectType.Jump, GetClipIndex(jumpVoiceClips, randomClip));
             lastJumpVoiceTime = Time.time;
-            Debug.Log($"🔊 Jump voice played for {gameObject.name}");
         }
     }
 
@@ -328,7 +318,6 @@ public class PlayerController : NetworkBehaviour
         {
             PlayVoiceEffectClientRpc(VoiceEffectType.Walk, GetClipIndex(walkVoiceClips, randomClip));
             lastWalkVoiceTime = Time.time;
-            Debug.Log($"🔊 Walk voice played for {gameObject.name}");
         }
     }
 
@@ -342,7 +331,6 @@ public class PlayerController : NetworkBehaviour
         {
             PlayVoiceEffectClientRpc(VoiceEffectType.Run, GetClipIndex(runVoiceClips, randomClip));
             lastRunVoiceTime = Time.time;
-            Debug.Log($"🔊 Run voice played for {gameObject.name}");
         }
     }
 
@@ -355,7 +343,6 @@ public class PlayerController : NetworkBehaviour
         if (randomClip != null)
         {
             PlayVoiceEffectClientRpc(VoiceEffectType.Landing, GetClipIndex(landingVoiceClips, randomClip));
-            Debug.Log($"🔊 Landing voice played for {gameObject.name}");
         }
     }
 
@@ -442,7 +429,7 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning("🔊 Only owner can test voice effects!");
+            Debug.LogWarning("Only owner can test voice effects!");
         }
     }
 
@@ -456,7 +443,7 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning("🔊 Only owner can test voice effects!");
+            Debug.LogWarning("Only owner can test voice effects!");
         }
     }
 
@@ -470,7 +457,7 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning("🔊 Only owner can test voice effects!");
+            Debug.LogWarning("Only owner can test voice effects!");
         }
     }
 
@@ -483,22 +470,21 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning("🔊 Only owner can test voice effects!");
+            Debug.LogWarning("Only owner can test voice effects!");
         }
     }
 
     [ContextMenu("Debug Voice Settings")]
     public void DebugVoiceSettings()
     {
-        Debug.Log($"🔊 === Voice Settings Debug for {gameObject.name} ===");
-        Debug.Log($"🔊 IsOwner: {IsOwner}");
-        Debug.Log($"🔊 AudioSource: {(_audioSource != null ? "Found" : "NULL")}");
-        Debug.Log($"🔊 Jump clips: {(jumpVoiceClips?.Length ?? 0)}");
-        Debug.Log($"🔊 Walk clips: {(walkVoiceClips?.Length ?? 0)}");
-        Debug.Log($"🔊 Run clips: {(runVoiceClips?.Length ?? 0)}");
-        Debug.Log($"🔊 Landing clips: {(landingVoiceClips?.Length ?? 0)}");
-        Debug.Log($"🔊 Voice volume: {voiceVolume}");
-       
+        Debug.Log($"=== Voice Settings Debug for {gameObject.name} ===");
+        Debug.Log($"IsOwner: {IsOwner}");
+        Debug.Log($"AudioSource: {(_audioSource != null ? "Found" : "NULL")}");
+        Debug.Log($"Jump clips: {(jumpVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Walk clips: {(walkVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Run clips: {(runVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Landing clips: {(landingVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Voice volume: {voiceVolume}");
     }
 
     #endregion
@@ -519,7 +505,6 @@ public class PlayerController : NetworkBehaviour
     }
 }
 
-// Enum for voice effect types
 public enum VoiceEffectType
 {
     Jump,

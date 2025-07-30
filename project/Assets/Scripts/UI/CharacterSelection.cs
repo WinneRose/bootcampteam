@@ -62,8 +62,6 @@ namespace UI
             {
                 Invoke(nameof(HandleAutoAssignment), 0.1f);
             }
-            
-            Debug.Log($"CharacterSelection NetworkBehaviour spawned - IsHost: {IsHost}, LocalClientId: {NetworkManager.Singleton.LocalClientId}");
         }
         
         void Start()
@@ -75,7 +73,6 @@ namespace UI
             }
             
             UpdateUI();
-            Debug.Log("CharacterSelection Started!");
         }
         
         private void HandleAutoAssignment()
@@ -97,14 +94,12 @@ namespace UI
                     // Auto-assign host to Dew
                     isDewSelected.Value = true;
                     dewPlayerID.Value = clientId;
-                    Debug.Log($"Auto-assigned HOST (Client {clientId}) to Dew character");
                 }
                 else if (!isHost && autoAssignClientToSol && !isSolSelected.Value)
                 {
                     // Auto-assign client to Sol
                     isSolSelected.Value = true;
                     solPlayerID.Value = clientId;
-                    Debug.Log($"Auto-assigned CLIENT (Client {clientId}) to Sol character");
                 }
             }
             
@@ -124,11 +119,6 @@ namespace UI
                 {
                     startGameButton.onClick.RemoveAllListeners();
                     startGameButton.onClick.AddListener(OnStartGameClicked);
-                    Debug.Log("Start Game button set up for HOST");
-                }
-                else
-                {
-                    Debug.Log("Start Game button HIDDEN for CLIENT");
                 }
             }
             else
@@ -151,8 +141,6 @@ namespace UI
         [ServerRpc(RequireOwnership = false)]
         private void RequestCharacterSelectionServerRpc(string characterName, ulong clientId)
         {
-            Debug.Log($"Server received character selection request: {characterName} from client {clientId}");
-            
             if (characterName == "Dew")
             {
                 HandleDewSelection(clientId);
@@ -173,18 +161,12 @@ namespace UI
                 // Deselect Dew
                 isDewSelected.Value = false;
                 dewPlayerID.Value = 999999;
-                Debug.Log($"Dew deselected by client {clientId}");
             }
             else if (!isDewSelected.Value)
             {
                 // Select Dew
                 isDewSelected.Value = true;
                 dewPlayerID.Value = clientId;
-                Debug.Log($"Dew selected by client {clientId}");
-            }
-            else
-            {
-                Debug.Log($"Dew already selected by another player (Player {dewPlayerID.Value})");
             }
         }
         
@@ -195,18 +177,12 @@ namespace UI
                 // Deselect Sol
                 isSolSelected.Value = false;
                 solPlayerID.Value = 999999;
-                Debug.Log($"Sol deselected by client {clientId}");
             }
             else if (!isSolSelected.Value)
             {
                 // Select Sol
                 isSolSelected.Value = true;
                 solPlayerID.Value = clientId;
-                Debug.Log($"Sol selected by client {clientId}");
-            }
-            else
-            {
-                Debug.Log($"Sol already selected by another player (Player {solPlayerID.Value})");
             }
         }
         
@@ -215,8 +191,6 @@ namespace UI
         {
             if (!IsServer) return;
             
-            Debug.Log($"New client {clientId} connected - checking auto-assignment");
-            
             // Check if we need to auto-assign the new client
             bool isNewClientHost = (clientId == NetworkManager.Singleton.LocalClientId && NetworkManager.Singleton.IsHost);
             
@@ -224,14 +198,12 @@ namespace UI
             {
                 isDewSelected.Value = true;
                 dewPlayerID.Value = clientId;
-                Debug.Log($"Auto-assigned new HOST (Client {clientId}) to Dew character");
                 UpdateUIClientRpc();
             }
             else if (!isNewClientHost && autoAssignClientToSol && !isSolSelected.Value)
             {
                 isSolSelected.Value = true;
                 solPlayerID.Value = clientId;
-                Debug.Log($"Auto-assigned new CLIENT (Client {clientId}) to Sol character");
                 UpdateUIClientRpc();
             }
         }
@@ -242,7 +214,6 @@ namespace UI
             _dewLightEnabled = newValue;
             UpdateDewUI();
             UpdateLights();
-            Debug.Log($"Dew selection changed: {previousValue} -> {newValue}");
         }
         
         private void OnSolSelectionChanged(bool previousValue, bool newValue)
@@ -250,17 +221,16 @@ namespace UI
             _solLightEnabled = newValue;
             UpdateSolUI();
             UpdateLights();
-            Debug.Log($"Sol selection changed: {previousValue} -> {newValue}");
         }
         
         private void OnDewPlayerChanged(ulong previousValue, ulong newValue)
         {
-            Debug.Log($"Dew player changed from {previousValue} to {newValue}");
+            // Handle player ID changes if needed
         }
         
         private void OnSolPlayerChanged(ulong previousValue, ulong newValue)
         {
-            Debug.Log($"Sol player changed from {previousValue} to {newValue}");
+            // Handle player ID changes if needed
         }
         
         [ClientRpc]
@@ -276,8 +246,6 @@ namespace UI
             UpdateSolUI();
             UpdateLights();
             UpdateStartGameButton();
-            
-            Debug.Log($"UI Updated - Dew: {isDewSelected.Value} (Player {dewPlayerID.Value}), Sol: {isSolSelected.Value} (Player {solPlayerID.Value})");
         }
         
         private void UpdateDewUI()
@@ -285,7 +253,6 @@ namespace UI
             if (dewCheckbox != null && checkboxActive != null && checkboxPassive != null)
             {
                 dewCheckbox.sprite = isDewSelected.Value ? checkboxActive : checkboxPassive;
-                Debug.Log($"Dew UI Updated: {(isDewSelected.Value ? "Active" : "Passive")}");
             }
             else
             {
@@ -298,7 +265,6 @@ namespace UI
             if (solCheckbox != null && checkboxActive != null && checkboxPassive != null)
             {
                 solCheckbox.sprite = isSolSelected.Value ? checkboxActive : checkboxPassive;
-                Debug.Log($"Sol UI Updated: {(isSolSelected.Value ? "Active" : "Passive")}");
             }
             else
             {
@@ -357,8 +323,6 @@ namespace UI
                         buttonText.color = Color.gray;
                     }
                 }
-                
-                Debug.Log($"Start Game button updated - Can Start: {canStart}");
             }
         }
         
@@ -380,8 +344,6 @@ namespace UI
             CharacterSelectionManager.SetDewSelection(dewPlayerID.Value, null);
             CharacterSelectionManager.SetSolSelection(solPlayerID.Value, null);
             
-            Debug.Log($"Starting game with Dew: {dewPlayerID.Value}, Sol: {solPlayerID.Value}");
-            
             // Load game scene
             NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
@@ -399,44 +361,8 @@ namespace UI
             return "None";
         }
         
-        // Public methods to force character assignment (for testing)
-        [ContextMenu("Force Auto Assignment")]
-        public void ForceAutoAssignment()
-        {
-            if (IsServer)
-            {
-                _hasAutoAssigned = false;
-                HandleAutoAssignment();
-            }
-        }
-        
-        [ContextMenu("Manual Assign Host to Dew")]
-        public void ManualAssignHostToDew()
-        {
-            if (IsServer)
-            {
-                ulong hostId = NetworkManager.Singleton.LocalClientId;
-                isDewSelected.Value = true;
-                dewPlayerID.Value = hostId;
-                UpdateUIClientRpc();
-            }
-        }
-        
-        [ContextMenu("Clear All Selections")]
-        public void ClearAllSelections()
-        {
-            if (IsServer)
-            {
-                isDewSelected.Value = false;
-                isSolSelected.Value = false;
-                dewPlayerID.Value = 999999;
-                solPlayerID.Value = 999999;
-                UpdateUIClientRpc();
-            }
-        }
-        
-        // Debug methods
-        [ContextMenu("Debug Selection State")]
+        // Context Menu Debug Methods
+        [ContextMenu("Debug: Show Selection State")]
         public void DebugSelectionState()
         {
             Debug.Log("=== Character Selection State ===");
@@ -456,6 +382,186 @@ namespace UI
             else
             {
                 Debug.Log("Start Button: NULL");
+            }
+        }
+        
+        [ContextMenu("Debug: Show UI Components")]
+        public void DebugUIComponents()
+        {
+            Debug.Log("=== UI Components State ===");
+            Debug.Log($"Dew Light: {(dewPointLight != null ? "Found" : "NULL")} - Enabled: {(dewPointLight != null ? dewPointLight.enabled.ToString() : "N/A")}");
+            Debug.Log($"Sol Light: {(solPointLight != null ? "Found" : "NULL")} - Enabled: {(solPointLight != null ? solPointLight.enabled.ToString() : "N/A")}");
+            Debug.Log($"Dew Checkbox: {(dewCheckbox != null ? "Found" : "NULL")}");
+            Debug.Log($"Sol Checkbox: {(solCheckbox != null ? "Found" : "NULL")}");
+            Debug.Log($"Checkbox Active Sprite: {(checkboxActive != null ? "Found" : "NULL")}");
+            Debug.Log($"Checkbox Passive Sprite: {(checkboxPassive != null ? "Found" : "NULL")}");
+            Debug.Log($"Start Game Button: {(startGameButton != null ? "Found" : "NULL")}");
+        }
+        
+        [ContextMenu("Debug: Show Network State")]
+        public void DebugNetworkState()
+        {
+            Debug.Log("=== Network State ===");
+            Debug.Log($"Network Manager: {(NetworkManager.Singleton != null ? "Found" : "NULL")}");
+            
+            if (NetworkManager.Singleton != null)
+            {
+                Debug.Log($"Is Host: {NetworkManager.Singleton.IsHost}");
+                Debug.Log($"Is Client: {NetworkManager.Singleton.IsClient}");
+                Debug.Log($"Is Server: {NetworkManager.Singleton.IsServer}");
+                Debug.Log($"Local Client ID: {NetworkManager.Singleton.LocalClientId}");
+                Debug.Log($"Connected Clients: {NetworkManager.Singleton.ConnectedClients.Count}");
+                
+                foreach (var client in NetworkManager.Singleton.ConnectedClients)
+                {
+                    Debug.Log($"  Client {client.Key}");
+                }
+            }
+        }
+        
+        [ContextMenu("Debug: Show Auto Assignment Settings")]
+        public void DebugAutoAssignmentSettings()
+        {
+            Debug.Log("=== Auto Assignment Settings ===");
+            Debug.Log($"Auto Assign Host to Dew: {autoAssignHostToDew}");
+            Debug.Log($"Auto Assign Client to Sol: {autoAssignClientToSol}");
+            Debug.Log($"Has Auto Assigned: {_hasAutoAssigned}");
+            Debug.Log($"Game Scene Name: {gameSceneName}");
+        }
+        
+        [ContextMenu("Debug: Force Auto Assignment")]
+        public void DebugForceAutoAssignment()
+        {
+            if (IsServer)
+            {
+                _hasAutoAssigned = false;
+                HandleAutoAssignment();
+                Debug.Log("Forced auto assignment");
+            }
+            else
+            {
+                Debug.LogWarning("Can only force auto assignment on server!");
+            }
+        }
+        
+        [ContextMenu("Debug: Manual Assign Host to Dew")]
+        public void DebugManualAssignHostToDew()
+        {
+            if (IsServer)
+            {
+                ulong hostId = NetworkManager.Singleton.LocalClientId;
+                isDewSelected.Value = true;
+                dewPlayerID.Value = hostId;
+                UpdateUIClientRpc();
+                Debug.Log($"Manually assigned host (Client {hostId}) to Dew");
+            }
+            else
+            {
+                Debug.LogWarning("Can only assign characters on server!");
+            }
+        }
+        
+        [ContextMenu("Debug: Manual Assign Client to Sol")]
+        public void DebugManualAssignClientToSol()
+        {
+            if (IsServer)
+            {
+                // Find first non-host client
+                foreach (var client in NetworkManager.Singleton.ConnectedClients)
+                {
+                    if (client.Key != NetworkManager.Singleton.LocalClientId)
+                    {
+                        isSolSelected.Value = true;
+                        solPlayerID.Value = client.Key;
+                        UpdateUIClientRpc();
+                        Debug.Log($"Manually assigned client {client.Key} to Sol");
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Can only assign characters on server!");
+            }
+        }
+        
+        [ContextMenu("Debug: Clear All Selections")]
+        public void DebugClearAllSelections()
+        {
+            if (IsServer)
+            {
+                isDewSelected.Value = false;
+                isSolSelected.Value = false;
+                dewPlayerID.Value = 999999;
+                solPlayerID.Value = 999999;
+                _hasAutoAssigned = false;
+                UpdateUIClientRpc();
+                Debug.Log("Cleared all character selections");
+            }
+            else
+            {
+                Debug.LogWarning("Can only clear selections on server!");
+            }
+        }
+        
+        [ContextMenu("Debug: Test Dew Selection")]
+        public void DebugTestDewSelection()
+        {
+            OnDewButtonClick();
+            Debug.Log("Tested Dew selection button");
+        }
+        
+        [ContextMenu("Debug: Test Sol Selection")]
+        public void DebugTestSolSelection()
+        {
+            OnSolButtonClick();
+            Debug.Log("Tested Sol selection button");
+        }
+        
+        [ContextMenu("Debug: Test Start Game")]
+        public void DebugTestStartGame()
+        {
+            if (IsHost)
+            {
+                OnStartGameClicked();
+                Debug.Log("Tested start game button");
+            }
+            else
+            {
+                Debug.LogWarning("Only host can start the game!");
+            }
+        }
+        
+        [ContextMenu("Debug: Show Character Assignment")]
+        public void DebugShowCharacterAssignment()
+        {
+            Debug.Log("=== Character Assignment ===");
+            
+            if (NetworkManager.Singleton != null)
+            {
+                ulong localId = NetworkManager.Singleton.LocalClientId;
+                string myCharacter = GetCharacterForPlayer(localId);
+                Debug.Log($"My Client ID: {localId}");
+                Debug.Log($"My Character: {myCharacter}");
+                
+                Debug.Log("All Assignments:");
+                if (isDewSelected.Value)
+                {
+                    Debug.Log($"  Dew: Client {dewPlayerID.Value}");
+                }
+                else
+                {
+                    Debug.Log("  Dew: Not Selected");
+                }
+                
+                if (isSolSelected.Value)
+                {
+                    Debug.Log($"  Sol: Client {solPlayerID.Value}");
+                }
+                else
+                {
+                    Debug.Log("  Sol: Not Selected");
+                }
             }
         }
         

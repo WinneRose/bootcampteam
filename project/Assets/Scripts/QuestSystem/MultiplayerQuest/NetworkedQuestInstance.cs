@@ -6,6 +6,7 @@ public struct QuestNetworkData : INetworkSerializable
 {
     public float timeRemaining;
     public int collectedCount;
+    public int hitCount;           // NEW: Track hits
     public bool isCompleted;
     public bool isFailed;
     public int templateId;
@@ -14,6 +15,7 @@ public struct QuestNetworkData : INetworkSerializable
     {
         serializer.SerializeValue(ref timeRemaining);
         serializer.SerializeValue(ref collectedCount);
+        serializer.SerializeValue(ref hitCount);        // NEW
         serializer.SerializeValue(ref isCompleted);
         serializer.SerializeValue(ref isFailed);
         serializer.SerializeValue(ref templateId);
@@ -25,7 +27,6 @@ public class NetworkedQuestInstance
     public QuestStructure template;
     public QuestNetworkData currentData;
     
-    // Events for UI updates
     public System.Action<QuestNetworkData> OnDataChanged;
     
     private NetworkedQuestManager questManager;
@@ -37,66 +38,65 @@ public class NetworkedQuestInstance
         this.questId = questId;
         this.questManager = manager;
         
-        // Initialize data
         currentData = new QuestNetworkData
         {
             timeRemaining = template.isTimeBased ? template.timeInMinute * 60f : 0f,
             collectedCount = 0,
+            hitCount = 0,               // NEW
             isCompleted = false,
             isFailed = false,
             templateId = questId
         };
-
-        Debug.Log($"[NetworkedQuest] Created quest: {template.questName}, Collection: {template.isCollection}, Target: {template.collectionCount}");
     }
 
     public void UpdateDataFromNetwork(QuestNetworkData newData)
     {
-        var oldData = currentData;
         currentData = newData;
-        
-        // Trigger event for UI updates
         OnDataChanged?.Invoke(newData);
-        
-        Debug.Log($"[NetworkedQuest] {template.questName} updated - Time: {newData.timeRemaining:F1}s, Collected: {newData.collectedCount}/{template.collectionCount}, Completed: {newData.isCompleted}, Failed: {newData.isFailed}");
     }
 
     public void UpdateQuest(float deltaTime)
     {
-        // Only server updates the quest logic
         if (!NetworkManager.Singleton.IsServer) return;
 
         bool wasModified = false;
         var data = currentData;
 
+        if (data.isCompleted || data.isFailed)
+            return;
+
         // Handle time-based logic
-        if (template.isTimeBased && !data.isCompleted && !data.isFailed)
+        if (template.isTimeBased)
         {
             data.timeRemaining -= deltaTime;
             wasModified = true;
 
             if (data.timeRemaining <= 0f)
             {
-                if (template.isCollection)
+                data.timeRemaining = 0f;
+                
+                // Check if quest objectives are completed when time runs out
+                bool objectivesComplete = CheckObjectivesComplete(data);
+                
+                if (objectivesComplete)
                 {
-                    // Time ran out on a collection quest = FAILED (unless already completed)
-                    if (data.collectedCount >= template.collectionCount)
-                    {
-                        data.isCompleted = true;
-                        Debug.Log($"[NetworkedQuest] {template.questName} COMPLETED - Collection finished just as time ran out!");
-                    }
-                    else
-                    {
-                        data.isFailed = true;
-                        Debug.Log($"[NetworkedQuest] {template.questName} FAILED - Time ran out before collecting all items!");
-                    }
+                    data.isCompleted = true;
                 }
                 else
                 {
-                    // Time ran out on a pure time quest = COMPLETED
-                    data.isCompleted = true;
-                    Debug.Log($"[NetworkedQuest] {template.questName} COMPLETED - Time finished!");
+                    data.isFailed = true;
                 }
+                
+                wasModified = true;
+            }
+        }
+
+        // Check if all objectives are completed (without time pressure)
+        if (!data.isCompleted && !data.isFailed)
+        {
+            if (CheckObjectivesComplete(data))
+            {
+                data.isCompleted = true;
                 wasModified = true;
             }
         }
@@ -105,47 +105,80 @@ public class NetworkedQuestInstance
         if (wasModified)
         {
             currentData = data;
-            // Notify clients of the update
             questManager.SyncQuestDataClientRpc(questId, data);
         }
     }
 
+    private bool CheckObjectivesComplete(QuestNetworkData data)
+    {
+        bool collectionComplete = !template.isCollection || data.collectedCount >= template.collectionCount;
+        bool hitsComplete = !template.isHitBased || data.hitCount >= template.requiredHits;
+        
+        return collectionComplete && hitsComplete;
+    }
+
     public void CollectItem()
     {
-        // Only server can modify quest state
         if (!NetworkManager.Singleton.IsServer) return;
         if (!template.isCollection || currentData.isCompleted || currentData.isFailed) return;
 
         var data = currentData;
         data.collectedCount++;
         
-        Debug.Log($"[NetworkedQuest] {template.questName} - Collected item! Count: {data.collectedCount}/{template.collectionCount}");
-        
-        // Check for completion immediately after collecting
-        if (data.collectedCount >= template.collectionCount)
+        // Check if quest is now complete
+        if (CheckObjectivesComplete(data))
         {
             data.isCompleted = true;
-            Debug.Log($"[NetworkedQuest] {template.questName} COMPLETED - All items collected!");
         }
 
         currentData = data;
-        // Notify clients of the update
         questManager.SyncQuestDataClientRpc(questId, data);
     }
 
-    // Method to force check completion (useful for debugging)
- 
+    public void RegisterHit()  // NEW METHOD
+    {
+        if (!NetworkManager.Singleton.IsServer) return;
+        if (!template.isHitBased || currentData.isCompleted || currentData.isFailed) return;
+
+        var data = currentData;
+        data.hitCount++;
+        
+        // Check if quest is now complete
+        if (CheckObjectivesComplete(data))
+        {
+            data.isCompleted = true;
+        }
+
+        currentData = data;
+        questManager.SyncQuestDataClientRpc(questId, data);
+    }
 
     // Getters
     public bool IsTimeBased() => template.isTimeBased;
     public bool IsCollectionBased() => template.isCollection;
+    public bool IsHitBased() => template.isHitBased;  // NEW
 
     public float GetProgressPercentage()
     {
-        if (IsCollectionBased())
+        if (template.isCollection && template.isHitBased)
+        {
+            // Combined quest: average both progresses
+            float collectionProgress = (float)currentData.collectedCount / template.collectionCount;
+            float hitProgress = (float)currentData.hitCount / template.requiredHits;
+            return Mathf.Clamp01((collectionProgress + hitProgress) / 2f);
+        }
+        else if (IsCollectionBased())
+        {
             return Mathf.Clamp01((float)currentData.collectedCount / template.collectionCount);
+        }
+        else if (IsHitBased())
+        {
+            return Mathf.Clamp01((float)currentData.hitCount / template.requiredHits);
+        }
         else if (IsTimeBased())
+        {
             return Mathf.Clamp01(1f - (currentData.timeRemaining / (template.timeInMinute * 60f)));
+        }
 
         return 0f;
     }
@@ -155,18 +188,33 @@ public class NetworkedQuestInstance
 
     public string GetProgressText()
     {
+        string progressText = "";
+        
         if (IsCollectionBased())
-            return $"{currentData.collectedCount} / {template.collectionCount}";
-        else if (IsTimeBased())
-            return $"{Mathf.Ceil(currentData.timeRemaining)}s left";
-
-        return "Progress Unknown";
+        {
+            progressText += $"Collected: {currentData.collectedCount}/{template.collectionCount}";
+        }
+        
+        if (IsHitBased())
+        {
+            if (!string.IsNullOrEmpty(progressText)) progressText += " | ";
+            progressText += $"Hits: {currentData.hitCount}/{template.requiredHits}";
+        }
+        
+        if (IsTimeBased())
+        {
+            if (!string.IsNullOrEmpty(progressText)) progressText += " | ";
+            progressText += $"Time: {Mathf.Ceil(currentData.timeRemaining)}s";
+        }
+        
+        return string.IsNullOrEmpty(progressText) ? "In Progress" : progressText;
     }
 
     public bool IsCompleted() => currentData.isCompleted;
     public bool IsFailed() => currentData.isFailed;
     public float GetTimeRemaining() => currentData.timeRemaining;
     public int GetCollectedCount() => currentData.collectedCount;
+    public int GetHitCount() => currentData.hitCount;  // NEW
     public int GetQuestId() => questId;
 
     public void Dispose()

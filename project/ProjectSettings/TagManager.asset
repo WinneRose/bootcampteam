@@ -6,11 +6,12 @@ TagManager:
   tags:
   - Dew
   - Water
-  - Bridge
   - TestObject
   - waterProjectile
   - solarProjectile
   - Coin
+  - BridgeActivator
+  - Mushroom
   layers:
   - Default
   - TransparentFX

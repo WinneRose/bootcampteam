@@ -57,40 +57,37 @@ public class NetworkedQuestManager : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsServer) return; // Only server updates quest logic
+        if (!IsServer) return;
 
         var questsToCheck = activeQuests.Values.ToList();
         
         foreach (var quest in questsToCheck)
         {
-            // Skip quests that are already completed or failed
             if (quest.IsCompleted() || quest.IsFailed())
                 continue;
 
             // Store previous state
             bool wasCompletedBefore = quest.IsCompleted();
             bool wasFailedBefore = quest.IsFailed();
-
-            // Update quest (this handles time-based logic)
+            
+            // Update quest
             quest.UpdateQuest(Time.deltaTime);
 
             // Check for state changes
             bool isCompletedNow = quest.IsCompleted();
             bool isFailedNow = quest.IsFailed();
-
             int questId = quest.GetQuestId();
 
-            // Trigger events for newly completed/failed quests
+            // Handle failure
             if (!wasFailedBefore && isFailedNow)
             {
-                Debug.Log($"[NetworkedQuestManager] ❌ Quest Failed: {quest.GetQuestTitle()}");
                 OnQuestFailed?.Invoke(quest);
                 NotifyQuestFailedClientRpc(questId);
                 StartCoroutine(RemoveQuestAfterDelay(questId, 2.5f));
             }
-            else if (!wasCompletedBefore && isCompletedNow)
+            // Handle completion
+            else if (!wasCompletedBefore && isCompletedNow && !isFailedNow)
             {
-                Debug.Log($"[NetworkedQuestManager] ✅ Quest Completed: {quest.GetQuestTitle()}");
                 OnQuestCompleted?.Invoke(quest);
                 NotifyQuestCompletedClientRpc(questId);
                 StartCoroutine(RemoveQuestAfterDelay(questId, 2.5f));
@@ -104,12 +101,6 @@ public class NetworkedQuestManager : NetworkBehaviour
             yield break;
 
         questsBeingRemoved.Add(questId);
-
-        if (activeQuests.ContainsKey(questId))
-        {
-            Debug.Log($"[NetworkedQuestManager] Scheduled to remove: {activeQuests[questId].GetQuestTitle()} in {delay}s");
-        }
-
         yield return new WaitForSeconds(delay);
 
         if (activeQuests.ContainsKey(questId))
@@ -117,10 +108,6 @@ public class NetworkedQuestManager : NetworkBehaviour
             var quest = activeQuests[questId];
             quest.Dispose();
             activeQuests.Remove(questId);
-            
-            Debug.Log($"[NetworkedQuestManager] Removed quest ID: {questId}");
-            
-            // Notify clients to remove the quest
             RemoveQuestClientRpc(questId);
         }
 
@@ -131,10 +118,7 @@ public class NetworkedQuestManager : NetworkBehaviour
     public void StartQuestServerRpc(int templateIndex)
     {
         if (templateIndex < 0 || templateIndex >= availableQuestTemplates.Count)
-        {
-            Debug.LogError($"[NetworkedQuestManager] Invalid template index: {templateIndex}");
             return;
-        }
 
         var template = availableQuestTemplates[templateIndex];
         StartQuestInternal(template);
@@ -148,15 +132,10 @@ public class NetworkedQuestManager : NetworkBehaviour
         }
         else
         {
-            // Find template index and request from server
             int templateIndex = availableQuestTemplates.IndexOf(questTemplate);
             if (templateIndex >= 0)
             {
                 StartQuestServerRpc(templateIndex);
-            }
-            else
-            {
-                Debug.LogError($"[NetworkedQuestManager] Quest template not found in available templates: {questTemplate.name}");
             }
         }
     }
@@ -169,10 +148,7 @@ public class NetworkedQuestManager : NetworkBehaviour
         foreach (var quest in activeQuests.Values)
         {
             if (quest.template == questTemplate)
-            {
-                Debug.LogWarning($"[NetworkedQuestManager] Quest already started: {questTemplate.name}");
                 return;
-            }
         }
 
         int questId = nextQuestId++;
@@ -189,31 +165,24 @@ public class NetworkedQuestManager : NetworkBehaviour
     [ClientRpc]
     private void StartQuestClientRpc(int questId, int templateIndex, QuestNetworkData initialData)
     {
-        if (IsServer) return; // Server already handled this
+        if (IsServer) return;
 
         if (templateIndex < 0 || templateIndex >= availableQuestTemplates.Count)
-        {
-            Debug.LogError($"[NetworkedQuestManager] Invalid template index received: {templateIndex}");
             return;
-        }
 
         var template = availableQuestTemplates[templateIndex];
         var instance = new NetworkedQuestInstance(template, questId, this);
         instance.currentData = initialData;
         
-        // Subscribe to data changes for UI updates
         instance.OnDataChanged += (data) => OnQuestUpdated?.Invoke(instance);
-        
         activeQuests[questId] = instance;
-
         OnQuestStarted?.Invoke(instance);
     }
 
-    // Method to sync quest data in real-time
     [ClientRpc]
     public void SyncQuestDataClientRpc(int questId, QuestNetworkData newData)
     {
-        if (IsServer) return; // Server already has the data
+        if (IsServer) return;
         
         if (activeQuests.ContainsKey(questId))
         {
@@ -225,11 +194,10 @@ public class NetworkedQuestManager : NetworkBehaviour
     [ClientRpc]
     private void NotifyQuestCompletedClientRpc(int questId)
     {
-        if (IsServer) return; // Server already handled this
+        if (IsServer) return;
         
         if (activeQuests.ContainsKey(questId))
         {
-            Debug.Log($"[NetworkedQuestManager] Client received quest completion notification for: {activeQuests[questId].GetQuestTitle()}");
             OnQuestCompleted?.Invoke(activeQuests[questId]);
         }
     }
@@ -237,7 +205,7 @@ public class NetworkedQuestManager : NetworkBehaviour
     [ClientRpc]
     private void NotifyQuestFailedClientRpc(int questId)
     {
-        if (IsServer) return; // Server already handled this
+        if (IsServer) return;
         
         if (activeQuests.ContainsKey(questId))
         {
@@ -248,14 +216,13 @@ public class NetworkedQuestManager : NetworkBehaviour
     [ClientRpc]
     private void RemoveQuestClientRpc(int questId)
     {
-        if (IsServer) return; // Server already handled this
+        if (IsServer) return;
         
         if (activeQuests.ContainsKey(questId))
         {
             var quest = activeQuests[questId];
             quest.Dispose();
             activeQuests.Remove(questId);
-            Debug.Log($"[NetworkedQuestManager] Client removed quest ID: {questId}");
         }
     }
 
@@ -279,8 +246,6 @@ public class NetworkedQuestManager : NetworkBehaviour
 
     private void ReportItemCollectedInternal(string tag)
     {
-        Debug.Log($"[NetworkedQuestManager] 📦 Item collected: '{tag}'");
-        
         foreach (var quest in activeQuests.Values)
         {
             if (quest.IsCollectionBased() && 
@@ -288,24 +253,12 @@ public class NetworkedQuestManager : NetworkBehaviour
                 !quest.IsCompleted() && 
                 !quest.IsFailed())
             {
-                Debug.Log($"[NetworkedQuestManager] ✅ Applying to quest: {quest.GetQuestTitle()}");
-                
-                // Store state before collection
                 bool wasCompletedBefore = quest.IsCompleted();
-                
-                // Let the quest handle the collection
                 quest.CollectItem();
-                
-                // Check if quest was just completed
                 bool isCompletedNow = quest.IsCompleted();
                 
-                Debug.Log($"[NetworkedQuestManager] Progress: {quest.GetProgressText()}");
-                Debug.Log($"[NetworkedQuestManager] Was completed before: {wasCompletedBefore}, Is completed now: {isCompletedNow}");
-                
-                // ✅ FIX: Immediately trigger completion event if quest was just completed
                 if (!wasCompletedBefore && isCompletedNow)
                 {
-                    Debug.Log($"[NetworkedQuestManager] 🎉 QUEST JUST COMPLETED: {quest.GetQuestTitle()}!");
                     OnQuestCompleted?.Invoke(quest);
                     NotifyQuestCompletedClientRpc(quest.GetQuestId());
                     StartCoroutine(RemoveQuestAfterDelay(quest.GetQuestId(), 2.5f));
@@ -313,6 +266,54 @@ public class NetworkedQuestManager : NetworkBehaviour
             }
         }
     }
+    
+    // Add this method to your existing NetworkedQuestManager class:
+
+[ServerRpc(RequireOwnership = false)]
+public void ReportTargetHitServerRpc(string targetTag, string projectileTag)
+{
+    ReportTargetHitInternal(targetTag, projectileTag);
+}
+
+public void ReportTargetHit(string targetTag, string projectileTag)
+{
+    if (IsServer)
+    {
+        ReportTargetHitInternal(targetTag, projectileTag);
+    }
+    else
+    {
+        ReportTargetHitServerRpc(targetTag, projectileTag);
+    }
+}
+
+private void ReportTargetHitInternal(string targetTag, string projectileTag)
+{
+    foreach (var quest in activeQuests.Values)
+    {
+        if (quest.IsHitBased() && 
+            quest.template.hitTargetTag == targetTag && 
+            quest.template.projectileTag == projectileTag &&
+            !quest.IsCompleted() && 
+            !quest.IsFailed())
+        {
+            bool wasCompletedBefore = quest.IsCompleted();
+            quest.RegisterHit();
+            bool isCompletedNow = quest.IsCompleted();
+            
+            Debug.Log($"Hit registered for quest: {quest.GetQuestTitle()} ({quest.GetHitCount()}/{quest.template.requiredHits})");
+            
+            if (!wasCompletedBefore && isCompletedNow)
+            {
+                OnQuestCompleted?.Invoke(quest);
+                NotifyQuestCompletedClientRpc(quest.GetQuestId());
+                StartCoroutine(RemoveQuestAfterDelay(quest.GetQuestId(), 2.5f));
+            }
+        }
+    }
+}
+
+
 
     public List<NetworkedQuestInstance> GetActiveQuests()
     {
@@ -352,7 +353,6 @@ public class NetworkedQuestManager : NetworkBehaviour
         }
         activeQuests.Clear();
         questsBeingRemoved.Clear();
-        Debug.Log("[NetworkedQuestManager] All quests cleared.");
     }
 
     [ClientRpc]
@@ -362,23 +362,61 @@ public class NetworkedQuestManager : NetworkBehaviour
         ClearAllQuestsInternal();
     }
 
-    // Event handlers for logging
-    private void HandleQuestStarted(NetworkedQuestInstance quest)
+    // Event handlers
+    private void HandleQuestStarted(NetworkedQuestInstance quest) { }
+    private void HandleQuestCompleted(NetworkedQuestInstance quest) { }
+    private void HandleQuestFailed(NetworkedQuestInstance quest) { }
+
+    // Context Menu Debug Options
+    [ContextMenu("Debug: Show Active Quests")]
+    private void DebugShowActiveQuests()
     {
-        Debug.Log($"[NetworkedQuestManager] 🚀 Started quest: {quest.GetQuestTitle()}");
+        Debug.Log($"=== ACTIVE QUESTS DEBUG (Total: {activeQuests.Count}) ===");
+        Debug.Log($"Is Server: {IsServer}");
+        
+        foreach (var kvp in activeQuests)
+        {
+            var quest = kvp.Value;
+            Debug.Log($"Quest {kvp.Key}: {quest.GetQuestTitle()}");
+            Debug.Log($"  - Type: Collection={quest.IsCollectionBased()}, Time={quest.IsTimeBased()}");
+            Debug.Log($"  - Progress: {quest.GetCollectedCount()}/{quest.template.collectionCount}");
+            Debug.Log($"  - Status: Completed={quest.IsCompleted()}, Failed={quest.IsFailed()}");
+            Debug.Log($"  - Time: {quest.GetTimeRemaining():F1}s remaining");
+        }
     }
 
-    private void HandleQuestCompleted(NetworkedQuestInstance quest)
+    [ContextMenu("Debug: Force Complete All Quests")]
+    private void DebugForceCompleteAllQuests()
     {
-        Debug.Log($"[NetworkedQuestManager] 🎉 Completed quest: {quest.GetQuestTitle()}");
+        if (!IsServer) return;
+        
+        foreach (var quest in activeQuests.Values.ToList())
+        {
+            OnQuestCompleted?.Invoke(quest);
+            NotifyQuestCompletedClientRpc(quest.GetQuestId());
+        }
     }
 
-    private void HandleQuestFailed(NetworkedQuestInstance quest)
+    [ContextMenu("Debug: Force Fail All Quests")]
+    private void DebugForceFailAllQuests()
     {
-        Debug.Log($"[NetworkedQuestManager] ❌ Failed quest: {quest.GetQuestTitle()}");
+        if (!IsServer) return;
+        
+        foreach (var quest in activeQuests.Values.ToList())
+        {
+            OnQuestFailed?.Invoke(quest);
+            NotifyQuestFailedClientRpc(quest.GetQuestId());
+        }
     }
 
-   
-
-  
+    [ContextMenu("Debug: Start All Available Quests")]
+    private void DebugStartAllQuests()
+    {
+        foreach (var template in availableQuestTemplates)
+        {
+            StartQuest(template);
+        }
+    }
+    
+    
 }

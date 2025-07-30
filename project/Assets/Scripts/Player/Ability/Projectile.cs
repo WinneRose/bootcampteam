@@ -59,7 +59,10 @@ public class Projectile : NetworkBehaviour
         hasHit = true;
 
         // Debug log for projectile hits
-        Debug.Log($"[PROJECTILE] {gameObject.name} (Tag: '{gameObject.tag}') hit {hitObject.name} at {hitPoint}");
+        Debug.Log($"[PROJECTILE] {gameObject.name} (Tag: '{gameObject.tag}') hit {hitObject.name} (Tag: '{hitObject.tag}') at {hitPoint}");
+
+        // NEW: Report hit to quest system BEFORE any destruction logic
+        ReportHitToQuestSystem(hitObject);
 
         // Play hit effect immediately
         if (hitEffect != null)
@@ -74,7 +77,7 @@ public class Projectile : NetworkBehaviour
         }
 
         // Handle special cases
-        if (hitObject.CompareTag("Bridge"))
+        if (hitObject.CompareTag("BridgeActivator"))
         {
             if (hitObject.transform.childCount > 0)
             {
@@ -101,6 +104,20 @@ public class Projectile : NetworkBehaviour
 
         // For non-plant collisions, destroy immediately
         DestroyProjectile();
+    }
+    
+    private void ReportHitToQuestSystem(GameObject hitObject)
+    {
+
+        // Get the target's tag
+        string targetTag = hitObject.tag;
+        string projectileTag = gameObject.tag;
+        if (targetTag == "Mushroom") Destroy(hitObject);
+
+        
+
+        // Report the hit to the quest manager
+        NetworkedQuestManager.Instance.ReportTargetHit(targetTag, projectileTag);
     }
 
     private void DestroyProjectile()

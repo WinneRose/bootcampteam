@@ -235,8 +235,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  walkSpeed: 1
-  runSpeed: 3
+  walkSpeed: 2
+  runSpeed: 5
   acceleration: 10
   runHoldTime: 0.5
   animationSmoothTime: 0.1
@@ -246,17 +246,17 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  isGrounded: 0
+  isGrounded: 1
   showGroundCheckGizmos: 1
-  capsuleRadius: 0.4
+  capsuleRadius: 0.11
   jumpVoiceClips:
-  - {fileID: 8300000, guid: d493fa899a687704891c9e8b983bda79, type: 3}
+  - {fileID: 8300000, guid: d0e737f7c58b8bd499a7ba49164984d1, type: 3}
   walkVoiceClips:
-  - {fileID: 8300000, guid: 962151d01fd3d344fb37b5574ae22cf4, type: 3}
+  - {fileID: 8300000, guid: 72fb7a4a70336bd45bbb61147ca89f93, type: 3}
   runVoiceClips:
-  - {fileID: 8300000, guid: 962151d01fd3d344fb37b5574ae22cf4, type: 3}
+  - {fileID: 8300000, guid: 72fb7a4a70336bd45bbb61147ca89f93, type: 3}
   landingVoiceClips:
-  - {fileID: 8300000, guid: d493fa899a687704891c9e8b983bda79, type: 3}
+  - {fileID: 8300000, guid: d0e737f7c58b8bd499a7ba49164984d1, type: 3}
   voiceVolume: 1
   walkVoiceChance: 0.1
   runVoiceChance: 0.3
@@ -1254,7 +1254,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

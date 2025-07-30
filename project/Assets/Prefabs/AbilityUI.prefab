@@ -760,20 +760,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38e9a19bcb372a4e8aaf7e843e89c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilityBar: {fileID: 8125048390759762213}
-  abilityText: {fileID: 1885176670581721855}
-  abilityBarFill: {fileID: 7760517176822807883}
-  zoneInfoText: {fileID: 6352702430709242567}
-  chargingIndicator: {fileID: 8625501392445341830}
-  normalColor: {r: 0, g: 0, b: 1, a: 1}
+  waterBar: {fileID: 0}
+  waterBarFill: {fileID: 0}
+  waterText: {fileID: 0}
+  waterDistanceText: {fileID: 0}
+  waterChargingText: {fileID: 0}
+  waterChargingIndicator: {fileID: 0}
+  solarEnergyBar: {fileID: 0}
+  solarEnergyBarFill: {fileID: 0}
+  solarEnergyText: {fileID: 0}
+  timeOfDayText: {fileID: 0}
+  sunlightIndicator: {fileID: 0}
+  waterColor: {r: 0, g: 0, b: 1, a: 1}
+  solarColor: {r: 1, g: 0.6470588, b: 0, a: 1}
   chargingColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   readyColor: {r: 0, g: 1, b: 0, a: 1}
-  insufficientColor: {r: 1, g: 0, b: 0, a: 1}
-  maxedOutColor: {r: 1, g: 0.6470588, b: 0, a: 1}
-  animationSpeed: 2
-  pulseIntensity: 0.3
-  autoHideUI: 1
-  hideDelay: 3
+  lowWaterColor: {r: 1, g: 0, b: 0, a: 1}
+  waterInRangeColor: {r: 0, g: 1, b: 1, a: 1}
+  waterOutOfRangeColor: {r: 1, g: 0, b: 0, a: 1}
+  waterDistanceUpdateRate: 0.1
 --- !u!1 &8625501392445341830
 GameObject:
   m_ObjectHideFlags: 0

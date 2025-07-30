@@ -29,7 +29,7 @@ public class AffectionZone : MonoBehaviour
     [Header("Debug Options")]
     [SerializeField] private Color debugColor = Color.yellow;
     [SerializeField] private bool debug = false;
-    [SerializeField] private bool showDetectedObjects = true;
+    [SerializeField] private bool showDetectedObjects = false; // Changed default to false
     
     // Private variables
     private List<GameObject> objectsInZone = new List<GameObject>();
@@ -68,17 +68,13 @@ public class AffectionZone : MonoBehaviour
             isTimedActive = startActive;
             if (startActive)
             {
-                // If starting active, set timer for when to deactivate
                 timedActivationTimer = activationDuration;
                 nextActivationTime = 0f;
-                Debug.Log($"[AffectionZone] Starting active for {activationDuration}s");
             }
             else
             {
-                // If starting inactive, set timer for when to activate
                 timedActivationTimer = 0f;
                 nextActivationTime = activationInterval;
-                Debug.Log($"[AffectionZone] Starting inactive, will activate in {activationInterval}s");
             }
         }
         
@@ -110,7 +106,7 @@ public class AffectionZone : MonoBehaviour
     
     public void GetAffectedObjects()
     {
-        // FIXED: Use half extents (zoneSize * 0.5f)
+        // Use half extents (zoneSize * 0.5f)
         Vector3 halfExtents = new Vector3(zoneSize, zoneSize, zoneSize) * 0.5f;
         
         Collider[] overlappedColliders = Physics.OverlapBox(
@@ -136,7 +132,7 @@ public class AffectionZone : MonoBehaviour
 
             GameObject obj = collider.gameObject;
 
-            // Check if the object’s tag is in the allowed list
+            // Check if the object's tag is in the allowed list
             if (allowedTags.Count > 0 && !allowedTags.Contains(obj.tag)) continue;
 
             objectsInZone.Add(obj);
@@ -168,8 +164,6 @@ public class AffectionZone : MonoBehaviour
     
     private void OnObjectEntered(GameObject obj)
     {
-        Debug.Log($"[AffectionZone] Object ENTERED: {obj.name}");
-        
         // Play sound effect
         if (audioSource != null && detectionSound != null)
         {
@@ -185,8 +179,6 @@ public class AffectionZone : MonoBehaviour
     
     private void OnObjectExited(GameObject obj)
     {
-        Debug.Log($"[AffectionZone] Object EXITED: {obj.name}");
-        
         // Fire event
         OnObjectExitZone?.Invoke(obj);
         
@@ -196,10 +188,7 @@ public class AffectionZone : MonoBehaviour
     
     private void ApplyAffectionEffects(GameObject obj)
     {
-        // Add your affection effects here
-        // Examples:
-        
-        // 1. Change object color (using material instance to avoid affecting prefab)
+        // Change object color (using material instance to avoid affecting prefab)
         Renderer renderer = obj.GetComponent<Renderer>();
         if (renderer != null)
         {
@@ -218,12 +207,10 @@ public class AffectionZone : MonoBehaviour
                 
                 // Apply the new material instance
                 renderer.material = newMaterial;
-                
-                Debug.Log($"Applied affection color {matColorAffect} to {obj.name}");
             }
         }
         
-        // 2. Apply force to rigidbodies
+        // Apply force to rigidbodies
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -231,7 +218,7 @@ public class AffectionZone : MonoBehaviour
             rb.AddForce(direction * 2f, ForceMode.Acceleration);
         }
         
-        // 3. Add custom behavior
+        // Add custom behavior
         // obj.SendMessage("OnAffectionZoneEnter", this, SendMessageOptions.DontRequireReceiver);
     }
     
@@ -262,8 +249,6 @@ public class AffectionZone : MonoBehaviour
                         DestroyImmediate(tempMaterial);
                     }
                 }
-                
-                Debug.Log($"Restored original material for {obj.name}");
             }
             
             // Remove the effect component
@@ -297,12 +282,10 @@ public class AffectionZone : MonoBehaviour
         if (shouldPlay && !smellPS.isPlaying)
         {
             smellPS.Play();
-            Debug.Log("[AffectionZone] Particle system started");
         }
         else if (!shouldPlay && smellPS.isPlaying)
         {
             smellPS.Stop();
-            Debug.Log("[AffectionZone] Particle system stopped");
         }
         
         // Adjust particle intensity based on object count (only when objects are detected)
@@ -353,8 +336,6 @@ public class AffectionZone : MonoBehaviour
         isTimedActive = true;
         timedActivationTimer = activationDuration; // Set duration timer
         
-        Debug.Log($"[AffectionZone] TIMED ACTIVATION - Zone active for {activationDuration}s");
-        
         // Play activation sound
         if (audioSource != null && detectionSound != null)
         {
@@ -370,8 +351,6 @@ public class AffectionZone : MonoBehaviour
         isTimedActive = false;
         timedActivationTimer = 0f;
         nextActivationTime = activationInterval; // Set when to activate next
-        
-        Debug.Log($"[AffectionZone] TIMED DEACTIVATION - Zone inactive for {activationInterval}s");
         
         // Remove effects from all current objects
         foreach (GameObject obj in objectsInZone)
@@ -428,24 +407,17 @@ public class AffectionZone : MonoBehaviour
             isTimedActive = startActive;
             timedActivationTimer = startActive ? activationDuration : 0f;
             nextActivationTime = startActive ? 0f : activationInterval;
-            Debug.Log($"[AffectionZone] Timed activation enabled - Starting {(startActive ? "active" : "inactive")}");
-        }
-        else
-        {
-            Debug.Log("[AffectionZone] Timed activation disabled");
         }
     }
     
     public void SetActivationInterval(float interval)
     {
         activationInterval = interval;
-        Debug.Log($"[AffectionZone] Activation interval set to {interval}s");
     }
     
     public void SetActivationDuration(float duration)
     {
         activationDuration = duration;
-        Debug.Log($"[AffectionZone] Activation duration set to {duration}s");
     }
     
     public void ForceActivateNow()
@@ -453,7 +425,6 @@ public class AffectionZone : MonoBehaviour
         if (useTimedActivation)
         {
             ActivateTimedZone();
-            Debug.Log("[AffectionZone] Force activated!");
         }
     }
     
@@ -462,7 +433,6 @@ public class AffectionZone : MonoBehaviour
         if (useTimedActivation)
         {
             DeactivateTimedZone();
-            Debug.Log("[AffectionZone] Force deactivated!");
         }
     }
     
@@ -521,31 +491,185 @@ public class AffectionZone : MonoBehaviour
         }
     }
     
-    // Manual detection trigger
-    [ContextMenu("Detect Objects Now")]
-    public void ForceDetection()
+    // Context Menu Debug Methods
+    [ContextMenu("Debug: Show Zone Status")]
+    public void DebugShowZoneStatus()
     {
+        Debug.Log("=== AFFECTION ZONE STATUS ===");
+        Debug.Log($"Zone Active: {affectionZone}");
+        Debug.Log($"Currently Active: {IsZoneCurrentlyActive()}");
+        Debug.Log($"Zone Size: {zoneSize}");
+        Debug.Log($"Detection Rate: {detectionRate}s");
+        Debug.Log($"Objects in Zone: {objectsInZone.Count}");
+        Debug.Log($"Allowed Tags: {string.Join(", ", allowedTags)}");
+        Debug.Log($"Affected Layers: {affectedLayers.value}");
+    }
+    
+    [ContextMenu("Debug: Show Detected Objects")]
+    public void DebugShowDetectedObjects()
+    {
+        Debug.Log("=== DETECTED OBJECTS ===");
+        Debug.Log($"Total Objects: {objectsInZone.Count}");
+        
+        for (int i = 0; i < objectsInZone.Count; i++)
+        {
+            GameObject obj = objectsInZone[i];
+            if (obj != null)
+            {
+                Debug.Log($"  {i + 1}. {obj.name} (Tag: {obj.tag}, Layer: {obj.layer})");
+                Debug.Log($"     Position: {obj.transform.position}");
+                Debug.Log($"     Distance: {Vector3.Distance(transform.position, obj.transform.position):F2}");
+            }
+            else
+            {
+                Debug.Log($"  {i + 1}. NULL OBJECT");
+            }
+        }
+    }
+    
+    [ContextMenu("Debug: Show Timed Activation Status")]
+    public void DebugShowTimedActivationStatus()
+    {
+        Debug.Log("=== TIMED ACTIVATION STATUS ===");
+        Debug.Log($"Use Timed Activation: {useTimedActivation}");
+        Debug.Log($"Start Active: {startActive}");
+        Debug.Log($"Activation Interval: {activationInterval}s");
+        Debug.Log($"Activation Duration: {activationDuration}s");
+        Debug.Log($"Current Status: {GetTimedActivationStatus()}");
+        Debug.Log($"Is Timed Active: {isTimedActive}");
+        Debug.Log($"Timer Value: {timedActivationTimer:F2}s");
+        Debug.Log($"Next Activation Time: {nextActivationTime:F2}s");
+    }
+    
+    [ContextMenu("Debug: Show Effect Settings")]
+    public void DebugShowEffectSettings()
+    {
+        Debug.Log("=== EFFECT SETTINGS ===");
+        Debug.Log($"Particle System: {(smellPS != null ? smellPS.name : "NULL")}");
+        Debug.Log($"Detection Sound: {(detectionSound != null ? detectionSound.name : "NULL")}");
+        Debug.Log($"Audio Volume: {audioVolume}");
+        Debug.Log($"Material Color Effect: {matColorAffect}");
+        Debug.Log($"Audio Source: {(audioSource != null ? "Found" : "NULL")}");
+        
+        if (smellPS != null)
+        {
+            Debug.Log($"Particle System Playing: {smellPS.isPlaying}");
+            var emission = smellPS.emission;
+            Debug.Log($"Particle Rate: {emission.rateOverTime.constant}");
+        }
+    }
+    
+    [ContextMenu("Debug: Force Detection Now")]
+    public void DebugForceDetection()
+    {
+        Debug.Log("Forcing object detection...");
         GetAffectedObjects();
+        Debug.Log($"Detection complete. Found {objectsInZone.Count} objects.");
     }
     
-    [ContextMenu("Force Activate Zone")]
-    public void ForceActivate()
+    [ContextMenu("Debug: Force Activate Zone")]
+    public void DebugForceActivate()
     {
-        ForceActivateNow();
+        if (useTimedActivation)
+        {
+            ForceActivateNow();
+            Debug.Log("Zone force activated!");
+        }
+        else
+        {
+            Debug.Log("Timed activation is disabled. Enable it to use force activation.");
+        }
     }
     
-    [ContextMenu("Force Deactivate Zone")]
-    public void ForceDeactivate()
+    [ContextMenu("Debug: Force Deactivate Zone")]
+    public void DebugForceDeactivate()
     {
-        ForceDeactivateNow();
+        if (useTimedActivation)
+        {
+            ForceDeactivateNow();
+            Debug.Log("Zone force deactivated!");
+        }
+        else
+        {
+            Debug.Log("Timed activation is disabled. Enable it to use force deactivation.");
+        }
     }
     
-    [ContextMenu("Reset Timed Activation")]
-    public void ResetTimedActivation()
+    [ContextMenu("Debug: Reset Timed Activation")]
+    public void DebugResetTimedActivation()
     {
         if (useTimedActivation)
         {
             SetTimedActivation(true);
+            Debug.Log("Timed activation reset to initial state.");
+        }
+        else
+        {
+            Debug.Log("Timed activation is disabled.");
+        }
+    }
+    
+    [ContextMenu("Debug: Toggle Zone Active")]
+    public void DebugToggleZoneActive()
+    {
+        SetZoneActive(!affectionZone);
+        Debug.Log($"Zone toggled to: {(affectionZone ? "ACTIVE" : "INACTIVE")}");
+    }
+    
+    [ContextMenu("Debug: Clear All Effects")]
+    public void DebugClearAllEffects()
+    {
+        Debug.Log("Clearing all affection effects...");
+        
+        foreach (GameObject obj in objectsInZone)
+        {
+            RemoveAffectionEffects(obj);
+        }
+        
+        objectsInZone.Clear();
+        previousObjects.Clear();
+        
+        if (smellPS != null && smellPS.isPlaying)
+        {
+            smellPS.Stop();
+        }
+        
+        Debug.Log("All effects cleared.");
+    }
+    
+    [ContextMenu("Debug: Test Particle System")]
+    public void DebugTestParticleSystem()
+    {
+        if (smellPS != null)
+        {
+            if (smellPS.isPlaying)
+            {
+                smellPS.Stop();
+                Debug.Log("Particle system stopped.");
+            }
+            else
+            {
+                smellPS.Play();
+                Debug.Log("Particle system started.");
+            }
+        }
+        else
+        {
+            Debug.Log("No particle system assigned!");
+        }
+    }
+    
+    [ContextMenu("Debug: Test Detection Sound")]
+    public void DebugTestDetectionSound()
+    {
+        if (audioSource != null && detectionSound != null)
+        {
+            audioSource.PlayOneShot(detectionSound);
+            Debug.Log("Detection sound played.");
+        }
+        else
+        {
+            Debug.Log($"Cannot play sound - AudioSource: {(audioSource != null ? "OK" : "NULL")}, Sound: {(detectionSound != null ? "OK" : "NULL")}");
         }
     }
     

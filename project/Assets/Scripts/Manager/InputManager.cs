@@ -205,7 +205,7 @@ public class InputManager : NetworkBehaviour
                 else if (solAbilitySystem != null)
                     solAbilitySystem.StartCharging();
                     
-                Debug.Log("Started charging ability input");
+       
             }
             // Stop charging when button is released
             else if (!isChargingNow && wasChargingLastFrame)
@@ -215,7 +215,7 @@ public class InputManager : NetworkBehaviour
                 else if (solAbilitySystem != null)
                     solAbilitySystem.StopCharging();
                     
-                Debug.Log("Stopped charging ability input");
+          
             }
             
             wasChargingLastFrame = isChargingNow;
@@ -229,7 +229,7 @@ public class InputManager : NetworkBehaviour
             else if (solAbilitySystem != null)
                 solAbilitySystem.UseAbility();
                 
-            Debug.Log("Use ability triggered");
+  
         }
     }
     

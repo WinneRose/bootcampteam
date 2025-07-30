@@ -1515,8 +1515,28 @@ PrefabInstance:
       propertyPath: m_Name
       value: QuestSystem
       objectReference: {fileID: 0}
+    - target: {fileID: 1828922018316634550, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 300
+      objectReference: {fileID: 0}
     - target: {fileID: 2209535846855882041, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}
       propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2230125193782942725, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2230125193782942725, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7518199219982691963, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7518199219982691963, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8927856727437472484, guid: 8005f9cb62a484c4096f7f43a2f159e3, type: 3}

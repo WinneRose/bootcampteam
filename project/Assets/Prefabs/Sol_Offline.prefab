@@ -121,6 +121,15 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+  _interactAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 31626eb3-1837-42b7-afbc-b651b830bd97
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!1 &4239784524598211252 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1587621725414511438, guid: a3990db05b5aa2a4eb08bc88c55410b0, type: 3}
