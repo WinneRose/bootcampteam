@@ -10,6 +10,10 @@ public class SceneMusic
     
     [Tooltip("Music to play in this scene")]
     public AudioClip musicClip;
+    
+    [Tooltip("Pitch for this scene's music")]
+    [Range(0.25f, 3f)]
+    public float pitch = 1f;
 }
 
 public class MusicManager : MonoBehaviour
@@ -24,6 +28,9 @@ public class MusicManager : MonoBehaviour
     
     [Tooltip("Fade time between tracks")]
     public float fadeTime = 1f;
+    
+    [Tooltip("Pitch transition time when changing scenes")]
+    public float pitchTransitionTime = 0.5f;
     
     // Components
     private AudioSource audioSource;
@@ -51,6 +58,7 @@ public class MusicManager : MonoBehaviour
             audioSource.loop = true;
             audioSource.playOnAwake = false;
             audioSource.volume = musicVolume;
+            audioSource.pitch = 1f; // Default pitch
             
             Debug.Log("🎵 Music Manager initialized");
         }
@@ -80,12 +88,12 @@ public class MusicManager : MonoBehaviour
         string currentSceneName = SceneManager.GetActiveScene().name;
         
         // Find music for this scene
-        AudioClip musicToPlay = GetMusicForScene(currentSceneName);
+        SceneMusic sceneMusicData = GetSceneMusicData(currentSceneName);
         
-        if (musicToPlay != null)
+        if (sceneMusicData != null && sceneMusicData.musicClip != null)
         {
-            Debug.Log($"🎵 Playing music for scene '{currentSceneName}': {musicToPlay.name}");
-            PlayMusic(musicToPlay);
+            Debug.Log($"🎵 Playing music for scene '{currentSceneName}': {sceneMusicData.musicClip.name} (Pitch: {sceneMusicData.pitch})");
+            PlayMusic(sceneMusicData.musicClip, sceneMusicData.pitch);
         }
         else
         {
@@ -94,32 +102,46 @@ public class MusicManager : MonoBehaviour
         }
     }
     
-    private AudioClip GetMusicForScene(string sceneName)
+    private SceneMusic GetSceneMusicData(string sceneName)
     {
         foreach (SceneMusic sceneMusic in sceneMusicList)
         {
             if (sceneMusic.sceneName == sceneName)
             {
-                return sceneMusic.musicClip;
+                return sceneMusic;
             }
         }
         return null;
     }
     
-    private void PlayMusic(AudioClip newClip)
+    private AudioClip GetMusicForScene(string sceneName)
     {
-        // If same music is already playing, don't restart
+        SceneMusic sceneData = GetSceneMusicData(sceneName);
+        return sceneData?.musicClip;
+    }
+    
+    private void PlayMusic(AudioClip newClip, float targetPitch = 1f)
+    {
+        // If same music is already playing, just adjust pitch if needed
         if (audioSource.clip == newClip && audioSource.isPlaying)
         {
-            Debug.Log($"🎵 Music '{newClip.name}' is already playing");
+            if (Mathf.Abs(audioSource.pitch - targetPitch) > 0.01f)
+            {
+                Debug.Log($"🎵 Adjusting pitch for '{newClip.name}' from {audioSource.pitch:F2} to {targetPitch:F2}");
+                StartCoroutine(TransitionPitch(targetPitch));
+            }
+            else
+            {
+                Debug.Log($"🎵 Music '{newClip.name}' is already playing at correct pitch");
+            }
             return;
         }
         
         // Start transition
-        StartCoroutine(TransitionToMusic(newClip));
+        StartCoroutine(TransitionToMusic(newClip, targetPitch));
     }
     
-    private IEnumerator TransitionToMusic(AudioClip newClip)
+    private IEnumerator TransitionToMusic(AudioClip newClip, float targetPitch)
     {
         // Fade out current music if playing
         if (audioSource.isPlaying)
@@ -127,12 +149,29 @@ public class MusicManager : MonoBehaviour
             yield return StartCoroutine(FadeOut());
         }
         
-        // Set new clip and fade in
+        // Set new clip, pitch, and fade in
         audioSource.clip = newClip;
+        audioSource.pitch = targetPitch;
         audioSource.Play();
         yield return StartCoroutine(FadeIn());
         
-        Debug.Log($"🎵 ✅ Now playing: {newClip.name}");
+        Debug.Log($"🎵 ✅ Now playing: {newClip.name} (Pitch: {targetPitch:F2})");
+    }
+    
+    private IEnumerator TransitionPitch(float targetPitch)
+    {
+        float startPitch = audioSource.pitch;
+        float timer = 0f;
+        
+        while (timer < pitchTransitionTime)
+        {
+            timer += Time.unscaledDeltaTime;
+            audioSource.pitch = Mathf.Lerp(startPitch, targetPitch, timer / pitchTransitionTime);
+            yield return null;
+        }
+        
+        audioSource.pitch = targetPitch;
+        Debug.Log($"🎵 ✅ Pitch transition complete: {targetPitch:F2}");
     }
     
     private IEnumerator FadeOut()
@@ -183,23 +222,37 @@ public class MusicManager : MonoBehaviour
         Debug.Log($"🎵 Volume set to: {musicVolume}");
     }
     
+    public void SetPitch(float pitch)
+    {
+        float clampedPitch = Mathf.Clamp(pitch, 0.25f, 3f);
+        StartCoroutine(TransitionPitch(clampedPitch));
+        Debug.Log($"🎵 Pitch manually set to: {clampedPitch:F2}");
+    }
+    
+    public float GetCurrentPitch()
+    {
+        return audioSource.pitch;
+    }
+    
     // Debug methods
     [ContextMenu("Debug Current Music")]
     public void DebugCurrentMusic()
     {
         string currentScene = SceneManager.GetActiveScene().name;
-        AudioClip currentMusic = GetMusicForScene(currentScene);
+        SceneMusic currentMusicData = GetSceneMusicData(currentScene);
         
         Debug.Log("🎵 === Music Manager Debug ===");
         Debug.Log($"🎵 Current Scene: {currentScene}");
-        Debug.Log($"🎵 Current Music: {(currentMusic != null ? currentMusic.name : "None")}");
+        Debug.Log($"🎵 Current Music: {(currentMusicData?.musicClip != null ? currentMusicData.musicClip.name : "None")}");
+        Debug.Log($"🎵 Scene Pitch: {(currentMusicData != null ? currentMusicData.pitch.ToString("F2") : "N/A")}");
+        Debug.Log($"🎵 Current Pitch: {audioSource.pitch:F2}");
         Debug.Log($"🎵 Is Playing: {audioSource.isPlaying}");
         Debug.Log($"🎵 Volume: {audioSource.volume}");
         
         Debug.Log($"🎵 Configured Scenes ({sceneMusicList.Length}):");
         foreach (SceneMusic sceneMusic in sceneMusicList)
         {
-            Debug.Log($"🎵   - '{sceneMusic.sceneName}' => {(sceneMusic.musicClip != null ? sceneMusic.musicClip.name : "No Music")}");
+            Debug.Log($"🎵   - '{sceneMusic.sceneName}' => {(sceneMusic.musicClip != null ? sceneMusic.musicClip.name : "No Music")} (Pitch: {sceneMusic.pitch:F2})");
         }
     }
     
@@ -207,6 +260,28 @@ public class MusicManager : MonoBehaviour
     public void ForcePlayCurrentSceneMusic()
     {
         PlayMusicForCurrentScene();
+    }
+    
+    [ContextMenu("Test Pitch Variations")]
+    public void TestPitchVariations()
+    {
+        StartCoroutine(TestPitchSequence());
+    }
+    
+    private IEnumerator TestPitchSequence()
+    {
+        float[] testPitches = { 0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f };
+        
+        foreach (float pitch in testPitches)
+        {
+            Debug.Log($"🎵 Testing pitch: {pitch:F2}");
+            yield return StartCoroutine(TransitionPitch(pitch));
+            yield return new WaitForSeconds(2f);
+        }
+        
+        // Return to normal pitch
+        yield return StartCoroutine(TransitionPitch(1f));
+        Debug.Log("🎵 Pitch test complete - returned to normal");
     }
     
     void OnDestroy()

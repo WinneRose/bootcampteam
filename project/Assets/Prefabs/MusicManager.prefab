@@ -48,12 +48,19 @@ MonoBehaviour:
   sceneMusicList:
   - sceneName: Character_Selected
     musicClip: {fileID: 8300000, guid: 889e5eb7b5394414e8d0c3afa993d328, type: 3}
+    pitch: 1
   - sceneName: MainMenu
     musicClip: {fileID: 8300000, guid: 889e5eb7b5394414e8d0c3afa993d328, type: 3}
+    pitch: 1
   - sceneName: RhythmOfStream
     musicClip: {fileID: 8300000, guid: 2cd15ee5d02bd7d4cb94eba286735f9c, type: 3}
+    pitch: 1
+  - sceneName: RoadofRoot
+    musicClip: {fileID: 8300000, guid: 2cd15ee5d02bd7d4cb94eba286735f9c, type: 3}
+    pitch: 0.4
   musicVolume: 0.5
   fadeTime: 1
+  pitchTransitionTime: 0.5
 --- !u!114 &3790925508366952088
 MonoBehaviour:
   m_ObjectHideFlags: 0
