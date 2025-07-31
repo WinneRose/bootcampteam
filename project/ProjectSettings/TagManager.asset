@@ -12,6 +12,7 @@ TagManager:
   - Coin
   - BridgeActivator
   - Mushroom
+  - Lake
   layers:
   - Default
   - TransparentFX

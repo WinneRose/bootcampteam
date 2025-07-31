@@ -22,7 +22,7 @@ public class SpawnPointHandler : NetworkBehaviour
     private System.Collections.IEnumerator PositionPlayersAfterDelay()
     {
         // Wait longer for all clients to be ready
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0.5f);
         
         Dew_Player = GameObject.Find("Dew(Clone)");
         Sol_Player = GameObject.Find("Sol(Clone)");

@@ -10,13 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b6bf6a2d04424e47b9bd1a067d604d2, type: 3}
-  m_Name: Second Quest
+  m_Name: ListenMemories
   m_EditorClassIdentifier: 
-  questName: Second Quest
-  questDescription: Second Quest
-  questType: time
-  isTimeBased: 0
-  timeInMinute: 0
+  questName: "K\xF6k Yolculu\u011Fu"
+  questDescription: "Yolculu\u011Fun ba\u015Flamas\u0131 i\xE7in K\xF6k\xFCn An\u0131lar\u0131nda
+    Vakit Ge\xE7irin"
   isCollection: 1
-  collectionCount: 2
-  collectionNameTag: Coin
+  isHitBased: 0
+  isTimeBased: 0
+  collectionNameTag: "A\u011Fa\xE7 K\xF6k\xFC An\u0131s\u0131"
+  collectionCount: 1
+  hitTargetTag: Target
+  requiredHits: 3
+  projectileTag: WaterProjectile
+  timeInMinute: 2

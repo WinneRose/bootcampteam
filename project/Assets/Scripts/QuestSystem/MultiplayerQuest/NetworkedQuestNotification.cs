@@ -172,7 +172,7 @@ public class NetworkedQuestNotification : MonoBehaviour
         string questTitle = quest.GetQuestTitle();
         if (string.IsNullOrEmpty(questTitle))
         {
-            questTitle = "Unknown Quest";
+            questTitle = "İsimsiz Görev";
         }
 
         string message = CreateQuestCompleteMessage(quest);
@@ -202,7 +202,7 @@ public class NetworkedQuestNotification : MonoBehaviour
         string questTitle = quest.GetQuestTitle();
         if (string.IsNullOrEmpty(questTitle))
         {
-            questTitle = "Unknown Quest";
+            questTitle = "İsimsiz Görev";
         }
 
         string message = CreateQuestFailMessage(quest);
@@ -240,7 +240,7 @@ public class NetworkedQuestNotification : MonoBehaviour
                                  Mathf.Approximately(progress, 0.5f) || 
                                  Mathf.Approximately(progress, 0.75f)))
                 {
-                    string message = $"📈 Progress Update!\n{quest.GetQuestTitle()}: {collected}/{total} {quest.template.collectionNameTag}s";
+                    string message = $"📈 İlerleme katedildi!\n{quest.GetQuestTitle()}: {collected}/{total} {quest.template.collectionNameTag}s";
                     
                     var notification = new NotificationData
                     {
@@ -261,20 +261,20 @@ public class NetworkedQuestNotification : MonoBehaviour
 
     private string CreateQuestStartMessage(NetworkedQuestInstance quest)
     {
-        string message = $"🎯 New Quest: {quest.GetQuestTitle()}";
+        string message = $"🎯 Yeni Görev: {quest.GetQuestTitle()}";
         
         if (quest.IsCollectionBased() && quest.IsTimeBased())
         {
-            message += $"\n📦 Collect {quest.template.collectionCount} {quest.template.collectionNameTag}s";
-            message += $"\n⏱️ Time Limit: {quest.template.timeInMinute:F0} minutes";
+            message += $"\n{quest.template.collectionCount} adet {quest.template.collectionNameTag} topla";
+            message += $"\n: {quest.template.timeInMinute:F0} dakika zaman limitli";
         }
         else if (quest.IsCollectionBased())
         {
-            message += $"\n📦 Collect {quest.template.collectionCount} {quest.template.collectionNameTag}s";
+            message += $"\n{quest.template.collectionCount} adet {quest.template.collectionNameTag} topla";
         }
         else if (quest.IsTimeBased())
         {
-            message += $"\n⏱️ Complete in {quest.template.timeInMinute:F0} minutes";
+            message += $"\n {quest.template.timeInMinute:F0} dakika içinde tamamla";
         }
         
         return message;
@@ -282,17 +282,17 @@ public class NetworkedQuestNotification : MonoBehaviour
 
     private string CreateQuestCompleteMessage(NetworkedQuestInstance quest)
     {
-        string message = $"🎉 Quest Completed!\n✅ {quest.GetQuestTitle()}";
+        string message = $"Görev Tamamlandı!\n✅ {quest.GetQuestTitle()}";
         
         if (quest.IsCollectionBased())
         {
-            message += $"\n📦 Collected all {quest.template.collectionCount} {quest.template.collectionNameTag}s!";
+            message += $"\nHepsi Toplandı {quest.template.collectionCount} {quest.template.collectionNameTag}s!";
         }
         
         if (quest.IsTimeBased())
         {
             float timeUsed = (quest.template.timeInMinute * 60f) - quest.GetTimeRemaining();
-            message += $"\n⏱️ Completed in {timeUsed:F1} seconds!";
+            message += $"\n{timeUsed:F1} saniye içinde tamamlanı";
         }
         
         return message;
@@ -300,17 +300,17 @@ public class NetworkedQuestNotification : MonoBehaviour
 
     private string CreateQuestFailMessage(NetworkedQuestInstance quest)
     {
-        string message = $"💥 Quest Failed!\n❌ {quest.GetQuestTitle()}";
+        string message = $"Görev Başarısız!\n {quest.GetQuestTitle()}";
         
         if (quest.IsCollectionBased() && quest.IsTimeBased())
         {
             int collected = quest.GetCollectedCount();
             int needed = quest.template.collectionCount;
-            message += $"\n⏰ Time ran out! Only collected {collected}/{needed} {quest.template.collectionNameTag}s";
+            message += $"\nZaman Doldu! {quest.template.collectionNameTag} {collected} tane toplantı, {needed} ihtiyaç vardı";
         }
         else if (quest.IsTimeBased())
         {
-            message += "\n⏰ Time ran out!";
+            message += "\nZaman Doldu!";
         }
         
         return message;
