@@ -1,113 +1,78 @@
-# Karakter Yetenek Profili: Sol & Dew
-
-Bu belge, Tohum Etkisi oyunundaki iki ana karakter olan **Sol** (olgunlaşmış yabani çilek) ve **Dew** (yeşil, olgunlaşmamış yabani çilek) karakterlerinin tüm yeteneklerini, fiziksel yapılarını, çevresel etkileşimlerini ve etkileşim kombinasyonlarını detaylı şekilde açıklar.
-
+# Mekanikler
 ---
 
 ## Sol – Olgunlaşmış Yabani Çilek
 
 ### Fiziksel Yapı ve Genel Özellikler
-
-- Daha büyük ve dolgun yapıda, dikkat çekici
-- Canlı kırmızı rengi ve belirgin dış tohumlarıyla çevresel fark edilirliği yüksek
-- Gündüzleri aktif, güneş enerjisiyle çalışan
-    
+- Büyük, kırmızı ve dikkat çekici.
+- Gündüzleri aktif; güneş enerjisiyle çalışır.
+- Aromatik yapısıyla çevreye etki eder.
 
 ### Yetenekler
 
-#### 1. Fotosentez Canlandırması
-- Güneş ışığı altında aktif hale gelir.
-- Kurak toprakları kısa sürede yeşillendirme etkisi sağlar; ancak bu etki yalnızca Dew yakında olduğunda veya alanda yeterli su bulunduğunda gerçekleşebilir.
-    
+#### 1. Güneş Topu
+- Zamanla güneş enerjisi biriktirir.  
+- Bu enerjiyle güçlü bir **güneş topu** atar.  
+- Güneş topu:
+  - Zararlı mantarları yok eder.  
+  - Bitki tohumlarının büyümesini tetikler.  
+  - Antik taşları pasif olarak etkileyebilir (ısı yayılımı).  
 
-#### 2. Solar Patlama
+#### 2. Aromatik Yayılım
+- Etrafına sürekli koku yayar.  
+- Bu koku bazı zararlıları sersemletir veya uzaklaştırır.  
+- Belirli bitki türlerini “uyandırır”.
 
-- Enerji biriktirerek zararlılara karşı alan etkili bir saldırı başlatır.
-- Bitkileri temizleyebilir, ancak mikro yaşamı da etkileyebilir.
-- Geceleri veya gölgede çalışmaz.
-    
-
-#### 3. Koku Alanı
-
-- Doğal aroması çevresel etkileşimleri tetikler:
-    - Zararlıları sersemletir veya çeker.
-    - Belirli bitkileri uyandırır.
-        
-
-#### 4. Frekans Algısı
-
-- Belirli flora ve taş anıtlar yalnızca Sol tarafından aktive edilebilir.
-- Doğanın geçmiş bilgilerini algılayarak görevleri açığa çıkarabilir.
-    
-
-#### 5. Çürüme Hassasiyeti
-
-- Sol’un yolu kurumuş topraklarla çevrilidir.
-- Çürükçül alanlara maruz kaldığında çürüme faktörü artar:
-    - Bu durum Sol’un aromatik yayılımını azaltır.
-    - Yeşertme etkisinin alanı küçülür, bazı bitkiler tepki vermez hale gelir.
-- Oyuncu, çürümeyi azaltmak için Dew'in yardımıyla nemli bölgeleri bulmalı.
-    
+#### 3. Enerji Döngüsü
+- Sadece güneş ışığı altında enerji biriktirir.  
+- Gölgelik ve gece alanlarda pasif kalır.  
+- Dew ile birlikteyken, güneş toplama süresi kısalır.
 
 ---
 
-## Dew – Olgunlaşmamış Yabani Çilek
+## 💧 Dew – Olgunlaşmamış Yabani Çilek
 
 ### Fiziksel Yapı ve Genel Özellikler
-
-- Küçük, hafif, çevreyle uyumlu yapı
-- Sessiz, titreşim ve nemle iletişim kurar
-- Gece aktifliği yüksek; su ve nem merkezli
-    
+- Küçük, hafif ve çevreye uyumlu.  
+- Sessizdir, su ve nemle çalışır.  
+- Gece veya nemli ortamlarda daha aktiftir.
 
 ### Yetenekler
 
-#### 1. Su Taşıma
+#### 1. Su Topu
+- Yakındaki su kaynaklarından güç alarak **su topu** fırlatır.  
+- Su topu:
+  - Antik objeleri aktive eder (örneğin geçitler, köprüler).  
+  - Bitki tohumlarını büyütür.  
+  - Çorak toprağı yumuşatabilir.
 
-- Su kaynaklarını algılayarak belirli noktalara taşıyabilir.
-- Su üretmeyen bölgelerde Dew, havadan nem toplayarak az miktarda sıvı üretebilir veya uzak kaynakların izini sürerek yön bulabilir.
-- Su akış yolları oluşturarak görev çözümleri sağlar.
-    
+#### 2. Nemsel Uyumluluk
+- Nemli bölgelerden geçebilir (mikro geçitler).  
+- Geniş alanlara nem yayarak bitki büyümesine katkı sağlar.
 
-#### 2. Büyüme Alanı
-
-- Yakın çevredeki bitkilerin büyüme hızını artırır.
-- Sol ile kesişirse “Doğal Senfoni” oluşur.
-    
-
-#### 3. Mikro Geçit Uyumu
-
-- Küçük ve sulu yapısı sayesinde nemli dar geçitlerden geçebilir.
-#### 4. Çürümeye Direnç
-
-- Dew’in yapısı nemi tutabildiği için çürükçül bölgelerde daha uzun süre dayanabilir.
-- Nem yayarak çürümeyi yavaşlatabilir veya geçici olarak etkisizleştirebilir.
-- Sol’un yanında bulunursa, onun çürüme etkisini azaltabilir.
-
-#### 6. Su Tutma Kapasitesi
-
-- Dew çürümeye maruz kaldığında, vücudunun su tutma kapasitesi azalır.
-- Bu durum, su taşıma ve nem üretimi gibi yeteneklerinin etkinliğini geçici olarak düşürür.
-- Dew’in yeniden nem kazanabilmesi için dinlenmesi veya su kaynağına erişmesi gerekir.
+#### 3. Su İzleme & Toplama
+- Uzak su kaynaklarının yönünü algılar.  
+- Havadaki nemi toplayarak sınırlı miktarda su üretir.  
+- Nem taşıma kapasitesi zamanla düşer; su kaynağına ihtiyaç duyar.
 
 ---
 
-## Etkileşimli Kombinasyonlar (Sol & Dew)
+## 🔄 Etkileşimli Kombinasyonlar
 
-| Kombinasyon                                        | Etki                                                        |
-| -------------------------------------------------- | ----------------------------------------------------------- |
-| Dew'in Nem Alanı + Sol’un Işık Alanı               | "Doğal Senfoni" → Flora patlaması, hızlı çevre restorasyonu |
-| Dew su taşır, Sol fotosentez yapar                 | Kurak alanlar daha hızlı ve yoğun şekilde canlanır          |
-| Dew zararlıyı nemle sersemletir, Sol patlama yapar | Alan kontrolü + temizleme                                   |
-| Dew gece nem toplar, Sol gündüz ışık sağlar        | Gece–gündüz uyumu ile kalıcı restorasyon elde edilir        |
+| Kombinasyon                                     | Etki                                                             |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| Dew su topu atar → Sol güneş topu atar         | Bitki hızlı büyür, flora yayılımı hızlanır                       |
+| Dew suyla obje aktive eder → Sol üstünden geçer| Geçitler, köprüler veya yapılar aktif hale gelir                 |
+| Dew zararlıyı nemle sersemletir → Sol yok eder | Kontrol + temizlik                                               |
+| Dew gece aktif → Sol gündüz aktif              | Sürekli ekosistem restorasyonu                                   |
 
 ---
 
 ## Notlar
 
-- Sol daha büyük ve fark edilir olduğu için dikkat çekici görevlerde öne çıkar.
-- Dew sessiz, destekleyici ve derin etki sağlayan bir karakterdir.
-- İkili birlikte hareket ettiğinde çevresel etki katsayısı %50 artar.
-- Sol’un aromatik etkisini koruyabilmesi için Dew ile koordineli çalışması gerekir.
+- Sol daha baskın ve dikkat çeken bir karakterdir.  
+- Dew ise çevresel etkileşimleri tetikleyen destekleyici roldedir.  
+- İkili birlikte çalıştığında doğa üzerindeki etkileri büyük ölçüde artar.  
+- Bazı seviyeler sadece iş birliğiyle aşılabilir.
 
-Bu yetenek profili, görev tasarımı, seviye yerleşimi ve oyun dengesi süreçlerinde referans olarak kullanılabilir.
+---
