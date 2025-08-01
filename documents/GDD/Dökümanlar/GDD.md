@@ -1,33 +1,61 @@
-# 🎮 Oyun Tasarımı Dokümanı
-
-## 📝 Oyun Adı  
-**Sol & Dew: Köklerin Çağrısı**  
-> (Geçici ad. Alternatifler: Dewlight, Rootbound, NaturaSync)
+# **Tohum Etkisi**
 
 ---
 
-## 🎮 Oyun Türü  
+## Oyun Türü
 - Co-op Puzzle Adventure  
 - Ortam Etkileşimli Mini-Oyunlar  
-- Ritim & Zamanlama Tabanlı Koordinasyon
 
 ---
 
-## 🌱 Oyun Açıklaması  
-Sol ve Dew adlı iki çilek karakteri, doğanın bozulmuş kök sistemini onarmak için ayrılıp tekrar birleşmek zorunda kalan canlılardır.  
-Oyun, ikili oyuncu senkronizasyonuna dayalı olarak çevresel bulmacaları, ritimsel etkileşimleri ve doğal döngüleri konu alır.  
-Kuruyan topraklar, ritimle açılan kök sistemleri, çürüme yayılımı gibi sistemlerle doğanın yeniden canlanışı işlenir.
+## 🌱 Oyun Açıklaması
 
-Her oyuncu farklı karakteri kontrol eder ve bölümleri birlikte çözmek zorundadır. Mekanikler; ışık, su, çürüme, büyüme, ritim ve çevresel değişim temaları etrafında şekillenir.
+**Sol ve Dew**, doğanın yeniden canlandırılması temasını işleyen iki oyunculu bir bulmaca/macera oyunudur. Sol (güneşi temsil eden) ve Dew (suyu temsil eden) adlı iki çilek karakteri, doğanın bozulmuş ekosistemine hayat vermeye çalışırlar.
 
 ---
 
-## 📊 Oyun Akışı
+## 📖 Ana Hikaye
+
+Oyun, Sol ve Dew'in bağlı oldukları dalların çatırdayıp ikiliyi farklı bölgelere düşürmesiyle başlar. Sol kurak, kaktüslerle dolu çorak bir alana düşerken, Dew nemli bir bölgeye düşer. Her iki karakter de kendi yeteneklerini kullanarak tekrar birleşmeye çalışır.
+
+---
+
+## ⚙️ Temel Mekanikler
+
+- **Su ve Güneş Kombinasyonu**: Sol ateş/ışık yetenekleri kullanırken, Dew su damlacıkları gönderir
+- **Çevresel Bulmacalar**: Mantarları temizleme (Sol yakarken Dew büyütür), bitkileri büyütme (güneş + su = büyüme), köprü inşa etme
+- **Gizemli Anıtlar**: Dew'in su göndermesiyle dal köprüleri oluşturan yapılar
+- **Ritimsel Etkileşim**: "Akıntının Ritmi" bölümünde görüldüğü gibi doğal döngülere dayalı oynama tarzı
+
+---
+
+## 🗺️ Bölüm Yapısı
+
+1. **Akıntının Ritmi**: Karakterlerin ayrılması ve çevreye uyum sağlaması
+2. **Birleşen Yollar**: Su anıtları ve dal köprüleri ile yeniden buluşma
+3. **Mantarlar**: Çürüme temizleme ve yeni yollar açma
+4. **İşimiz Kabak/Yeşertmek**: Bitki büyütme bulmacaları
+5. **Kurulmuşlar Bana**: Büyük kurumuş ağaca çıkış ve geçit keşfi
+6. **Kök Yolu**: Depresif ortamda içsel seslerle mücadele
+7. **Kök Anıları**: Geçmişin izlerini takip ederek umut bulma
+
+---
+
+## 🎮 Oyun Deneyimi
+
+Oyun, iki oyuncunun senkronize çalışmasını gerektiren çevresel bulmacalar, her karakterin benzersiz yeteneklerini kullanarak doğanın tahrip olmuş kök sistemini onarma süreci ve psikolojik derinlik (umut/umutsuzluk, içsel sesler, geçmiş anıları) temaları etrafında şekillenir.
+
+Bu oyun sadece çevresel bir mesaj vermekle kalmaz, aynı zamanda işbirliği, umut ve doğanın döngüsel yapısını anlama konularında da oyunculara deneyim sunar.
+
+---
+
+## 🔄 Oyun Akışı
 
 Aşağıda oyunun temel seviye akışını gösteren şema yer alır:
 
 **Oyun Akışı Diyagramı**  
-![Oyun Akışı](../Kaynaklar/Ekler/Oyun%20Akış.drawio.png)
+![Oyun Akışı](../Kaynaklar/Ekler/akis1.png)
+![Oyun Akışı](../Kaynaklar/Ekler/akis2.png)
 
 > Tüm görevler soldan sağa zaman çizgisiyle ilerler.
 
@@ -35,18 +63,14 @@ Aşağıda oyunun temel seviye akışını gösteren şema yer alır:
 
 ## 📂 İçerik Sayfaları
 
-| 📁 Kategori                | Açıklama                                                                                         |
-| -------------------------- | ------------------------------------------------------------------------------------------------ |
-| **📘 GDD**                 | Bu ana döküman, projenin tüm yapısını üstten sunar. [[GDD]]                                      |
-| **📖 Hikaye**              | Oyunun evreni, karakter arka planları ve seviye anlatımları.[[Hikaye]]                           |
-| **👥 Karakterler**         | Sol & Dew'in yetenekleri, davranışları ve evrimsel gelişimleri. [[Karakterler]]                  |
-| **🧩 Mekanikler**          | Tüm etkileşim sistemleri, oynanış mekaniği, mini-oyunlar ve kurallar. [[Mekanikler]]             |
-| **📣 Pazarlama**           | Oyun ismi, pazarlama dili, duygusal vurgu, potansiyel kitlesi ve tanıtım araçları. [[Pazarlama]] |
-| **🗺️ Seviyeler**          | Her bölümün adı, temasal içeriği, temel mekanik yapısı ve hedefleri. [[Seviyeler]]               |
-| **🎨 UI/UX**               | Arayüz yapısı, kullanıcı deneyimi, ekran yönlendirmeleri. [[UI_UX]]                              |
-| **🧠 Takım Koordinasyonu** | Ekip detayları. [[Takım Koordinasyonu]]                                                          |
-| **🔖 Referanslar**         | Görsel, tematik ve işitsel ilham kaynakları, karşılaştırmalı örnek oyunlar. [[Referanslar]]      |
+| 📁 Kategori | Açıklama |
+|-------------|----------|
+| **📘 GDD** | Bu ana döküman, projenin tüm yapısını üstten sunar. |
+| **📖 Hikaye** | Oyunun evreni, karakter arka planları ve seviye anlatımları.  |
+| **👥 Karakterler** | Sol & Dew'in yetenekleri, davranışları ve evrimsel gelişimleri.  |
+| **🧩 Mekanikler** | Tüm etkileşim sistemleri, oynanış mekaniği, mini-oyunlar ve kurallar.  |
+| **📣 Pazarlama** | Oyun ismi, pazarlama dili, duygusal vurgu, potansiyel kitlesi ve tanıtım araçları. |
+| **🗺️ Seviyeler** | Her bölümün adı, temasal içeriği, temel mekanik yapısı ve hedefleri. |
+| **🔖 Referanslar** | Görsel, tematik ve işitsel ilham kaynakları, karşılaştırmalı örnek oyunlar.  |
 
 ---
-
-> Bu döküman proje boyunca bir pusula gibi kullanılmalıdır. Güncel ve tutarlı kalması, tüm ekibin aynı yöne bakmasını sağlar.
