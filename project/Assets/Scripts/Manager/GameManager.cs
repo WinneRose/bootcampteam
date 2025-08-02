@@ -98,12 +98,16 @@ public class GameManager : NetworkBehaviour
     
     [Header("Settings")]
     public bool autoSpawnOnSceneLoad = true;
-    public float spawnDelay = 1f;
-    public float clientWaitTime = 2f; // Additional wait for clients
+    public float spawnDelay = 2f;
+    public float clientWaitTime = 3f;
     
     // Network variables to track spawned players
     private NetworkVariable<bool> _dewSpawned = new NetworkVariable<bool>(false);
     private NetworkVariable<bool> _solSpawned = new NetworkVariable<bool>(false);
+    
+    // Network variables for spawn positions (to ensure sync)
+    private NetworkVariable<Vector3> _dewSpawnPosition = new NetworkVariable<Vector3>();
+    private NetworkVariable<Vector3> _solSpawnPosition = new NetworkVariable<Vector3>();
     
     // References to spawned player objects
     private GameObject _spawnedDewPlayer;
@@ -111,26 +115,84 @@ public class GameManager : NetworkBehaviour
     
     public override void OnNetworkSpawn()
     {
+        Debug.Log($"GameManager NetworkSpawn - IsServer: {IsServer}, IsHost: {IsHost}, IsClient: {IsClient}");
+        
         if (IsServer)
         {
+            // Initialize spawn positions IMMEDIATELY
+            ValidateSpawnPoints();
+            
+            Vector3 dewPos = dewSpawnPoint != null ? dewSpawnPoint.position : transform.position + Vector3.left * 2f;
+            Vector3 solPos = solSpawnPoint != null ? solSpawnPoint.position : transform.position + Vector3.right * 2f;
+            
+            _dewSpawnPosition.Value = dewPos;
+            _solSpawnPosition.Value = solPos;
+            
+            Debug.Log($"Server initialized spawn positions - Dew: {dewPos}, Sol: {solPos}");
+            
             // Wait for all clients to connect before spawning
             if (autoSpawnOnSceneLoad)
             {
                 StartCoroutine(WaitForClientsAndSpawn());
             }
         }
+        
+        // Subscribe to spawn position changes on all clients
+        _dewSpawnPosition.OnValueChanged += OnDewSpawnPositionChanged;
+        _solSpawnPosition.OnValueChanged += OnSolSpawnPositionChanged;
+        
+        // On clients, log the received spawn positions
+        if (!IsServer)
+        {
+            Debug.Log($"[CLIENT] Received spawn positions - Dew: {_dewSpawnPosition.Value}, Sol: {_solSpawnPosition.Value}");
+        }
+    }
+    
+    private void OnDewSpawnPositionChanged(Vector3 previousValue, Vector3 newValue)
+    {
+        Debug.Log($"[CLIENT] Dew spawn position updated: {newValue}");
+    }
+    
+    private void OnSolSpawnPositionChanged(Vector3 previousValue, Vector3 newValue)
+    {
+        Debug.Log($"[CLIENT] Sol spawn position updated: {newValue}");
     }
     
     private IEnumerator WaitForClientsAndSpawn()
     {
-        // Wait for spawn delay
+        Debug.Log("Waiting for clients before spawning...");
+        
+        // Ensure spawn points are valid FIRST
+        ValidateSpawnPoints();
+        
+        // Set network spawn positions immediately
+        Vector3 dewPos = dewSpawnPoint != null ? dewSpawnPoint.position : transform.position + Vector3.left * 2f;
+        Vector3 solPos = solSpawnPoint != null ? solSpawnPoint.position : transform.position + Vector3.right * 2f;
+        
+        _dewSpawnPosition.Value = dewPos;
+        _solSpawnPosition.Value = solPos;
+        
+        Debug.Log($"Server set spawn positions - Dew: {dewPos}, Sol: {solPos}");
+        
+        // Wait for initial spawn delay
         yield return new WaitForSeconds(spawnDelay);
         
-        // Additional wait for clients to fully load
+        // Wait for clients to be ready
+        int maxWaitTime = 10; // Maximum 10 seconds
+        int waitedTime = 0;
+        
+        while (NetworkManager.Singleton.ConnectedClients.Count < 2 && waitedTime < maxWaitTime)
+        {
+            Debug.Log($"Waiting for clients... Current count: {NetworkManager.Singleton.ConnectedClients.Count}");
+            yield return new WaitForSeconds(1f);
+            waitedTime++;
+        }
+        
+        // Additional wait for clients to fully load the scene
         yield return new WaitForSeconds(clientWaitTime);
         
-        // Ensure spawn points are valid before spawning
-        ValidateSpawnPoints();
+        Debug.Log($"Starting spawn process. Connected clients: {NetworkManager.Singleton.ConnectedClients.Count}");
+        Debug.Log($"Final spawn positions - Dew: {_dewSpawnPosition.Value}, Sol: {_solSpawnPosition.Value}");
         
         SpawnPlayersFromSelection();
     }
@@ -185,13 +247,20 @@ public class GameManager : NetworkBehaviour
             return;
         }
         
-        // Spawn Dew character
+        // Spawn with a small delay between each spawn
+        StartCoroutine(SpawnPlayersSequentially(selectionData));
+    }
+    
+    private IEnumerator SpawnPlayersSequentially(CharacterSelectionData selectionData)
+    {
+        // Spawn Dew character first
         if (selectionData.isDewSelected && selectionData.dewPlayerID != 999999)
         {
             if (IsClientConnected(selectionData.dewPlayerID))
             {
                 Debug.Log($"Spawning Dew for player {selectionData.dewPlayerID}");
                 SpawnCharacterForPlayer(selectionData.dewPlayerID, "Dew", selectionData.dewPrefab ?? defaultDewPrefab);
+                yield return new WaitForSeconds(0.5f); // Small delay between spawns
             }
             else
             {
@@ -226,23 +295,33 @@ public class GameManager : NetworkBehaviour
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         Debug.Log($"Fallback spawn for {connectedClients.Count} connected clients");
         
-        int clientIndex = 0;
+        // Get host/server client ID (this should be the first one and spawn as Dew)
+        ulong hostClientId = NetworkManager.Singleton.LocalClientId;
+        
+        // Find the other client (this should spawn as Sol)
+        ulong clientId = 999999;
         foreach (var client in connectedClients)
         {
-            ulong clientId = client.Key;
-            Debug.Log($"Processing client {clientId} (index {clientIndex})");
-            
-            if (clientIndex == 0)
+            if (client.Key != hostClientId)
             {
-                SpawnCharacterForPlayer(clientId, "Dew", defaultDewPrefab);
+                clientId = client.Key;
+                break;
             }
-            else if (clientIndex == 1)
-            {
-                SpawnCharacterForPlayer(clientId, "Sol", defaultSolPrefab);
-            }
-            
-            clientIndex++;
-            if (clientIndex >= 2) break;
+        }
+        
+        // Spawn host as Dew
+        Debug.Log($"Fallback: Spawning Host/Server {hostClientId} as Dew");
+        SpawnCharacterForPlayer(hostClientId, "Dew", defaultDewPrefab);
+        
+        // Spawn client as Sol (if found)
+        if (clientId != 999999)
+        {
+            Debug.Log($"Fallback: Spawning Client {clientId} as Sol");
+            SpawnCharacterForPlayer(clientId, "Sol", defaultSolPrefab);
+        }
+        else
+        {
+            Debug.LogWarning("No client found to spawn as Sol in fallback mode!");
         }
     }
     
@@ -266,23 +345,42 @@ public class GameManager : NetworkBehaviour
             return;
         }
         
-        // Determine spawn point with better error handling
-        Transform spawnPoint = characterType == "Dew" ? dewSpawnPoint : solSpawnPoint;
-        
+        // Determine spawn position and rotation directly from spawn points
         Vector3 spawnPosition;
-        Quaternion spawnRotation;
+        Quaternion spawnRotation = Quaternion.identity;
         
-        if (spawnPoint == null)
+        if (characterType == "Dew")
         {
-            Debug.LogError($"NO SPAWN POINT ASSIGNED FOR {characterType}! Using GameManager position as fallback.");
-            spawnPosition = transform.position + (characterType == "Dew" ? Vector3.left * 2f : Vector3.right * 2f);
-            spawnRotation = transform.rotation;
+            if (dewSpawnPoint != null)
+            {
+                spawnPosition = dewSpawnPoint.position;
+                spawnRotation = dewSpawnPoint.rotation;
+            }
+            else
+            {
+                spawnPosition = _dewSpawnPosition.Value != Vector3.zero ? _dewSpawnPosition.Value : transform.position + Vector3.left * 2f;
+            }
         }
-        else
+        else // Sol
         {
-            spawnPosition = spawnPoint.position;
-            spawnRotation = spawnPoint.rotation;
-            Debug.Log($"Spawning {characterType} at {spawnPoint.name}: {spawnPosition}");
+            if (solSpawnPoint != null)
+            {
+                spawnPosition = solSpawnPoint.position;
+                spawnRotation = solSpawnPoint.rotation;
+            }
+            else
+            {
+                spawnPosition = _solSpawnPosition.Value != Vector3.zero ? _solSpawnPosition.Value : transform.position + Vector3.right * 2f;
+            }
+        }
+        
+        Debug.Log($"Spawning {characterType} for client {clientId} at position: {spawnPosition} (from {(characterType == "Dew" ? "dewSpawnPoint" : "solSpawnPoint")})");
+        
+        // Validate spawn position is not zero
+        if (spawnPosition == Vector3.zero)
+        {
+            Debug.LogError($"Spawn position is zero for {characterType}! Using fallback position.");
+            spawnPosition = transform.position + (characterType == "Dew" ? Vector3.left * 2f : Vector3.right * 2f);
         }
         
         try
@@ -300,25 +398,25 @@ public class GameManager : NetworkBehaviour
             // Spawn with ownership for the specific client
             networkObject.SpawnWithOwnership(clientId);
             
-            // Store references
+            // Store references and update network variables
             if (characterType == "Dew")
             {
                 _spawnedDewPlayer = playerInstance;
                 _dewSpawned.Value = true;
-                Debug.Log($"Dew spawned successfully for client {clientId} at {spawnPosition}");
             }
             else if (characterType == "Sol")
             {
                 _spawnedSolPlayer = playerInstance;
                 _solSpawned.Value = true;
-                Debug.Log($"Sol spawned successfully for client {clientId} at {spawnPosition}");
             }
             
-            // Notify all clients about the spawn
+            Debug.Log($"{characterType} spawned successfully for client {clientId} at {spawnPosition}");
+            
+            // Notify all clients about the spawn with the exact position
             NotifyPlayerSpawnedClientRpc(clientId, characterType, spawnPosition);
             
-            // Force position update to ensure it's correct
-            StartCoroutine(ForcePositionUpdate(playerInstance, spawnPosition));
+            // Force position synchronization with a longer delay to ensure network sync
+            StartCoroutine(EnsureCorrectPositionExtended(playerInstance, spawnPosition, clientId, characterType));
         }
         catch (System.Exception e)
         {
@@ -326,67 +424,159 @@ public class GameManager : NetworkBehaviour
         }
     }
     
-    private IEnumerator ForcePositionUpdate(GameObject playerInstance, Vector3 correctPosition)
+    private IEnumerator EnsureCorrectPositionExtended(GameObject playerInstance, Vector3 correctPosition, ulong ownerId, string characterType)
     {
-        // Wait a frame then force the position
+        // Wait longer for network object to be fully spawned and synced
+        yield return new WaitForSeconds(0.5f);
+        
+        int attempts = 0;
+        int maxAttempts = 15; // More attempts for better reliability
+        
+        Debug.Log($"Starting position correction for {characterType} (Client {ownerId}). Target position: {correctPosition}");
+        
+        while (playerInstance != null && attempts < maxAttempts)
+        {
+            Vector3 currentPosition = playerInstance.transform.position;
+            float distance = Vector3.Distance(currentPosition, correctPosition);
+            
+            Debug.Log($"Attempt {attempts + 1}: {characterType} current position: {currentPosition}, target: {correctPosition}, distance: {distance}");
+            
+            if (distance > 0.1f) // If position is off by more than 0.1 units
+            {
+                Debug.Log($"Correcting position for {characterType} (Client {ownerId})");
+                
+                // Disable character controller and rigidbody temporarily if they exist
+                CharacterController cc = playerInstance.GetComponent<CharacterController>();
+                Rigidbody rb = playerInstance.GetComponent<Rigidbody>();
+                
+                if (cc != null)
+                {
+                    cc.enabled = false;
+                }
+                if (rb != null)
+                {
+                    rb.isKinematic = true;
+                }
+                
+                // Set the correct position
+                playerInstance.transform.position = correctPosition;
+                
+                yield return new WaitForFixedUpdate(); // Wait for physics update
+                
+                // Re-enable components
+                if (cc != null)
+                {
+                    cc.enabled = true;
+                }
+                if (rb != null)
+                {
+                    rb.isKinematic = false;
+                }
+                
+                // Send position update to all clients with character type info
+                ForcePositionUpdateWithTypeClientRpc(ownerId, correctPosition, characterType);
+                
+                yield return new WaitForSeconds(0.2f); // Longer wait between attempts
+                attempts++;
+            }
+            else
+            {
+                Debug.Log($"Position verified for {characterType} (Client {ownerId}) at {currentPosition}");
+                break;
+            }
+        }
+        
+        if (attempts >= maxAttempts)
+        {
+            Debug.LogError($"Failed to correct position for {characterType} (Client {ownerId}) after {maxAttempts} attempts. Final position: {playerInstance.transform.position}");
+            
+            // Final attempt - force teleport
+            ForceResetPositionClientRpc(ownerId, correctPosition, characterType);
+        }
+        else
+        {
+            Debug.Log($"Successfully positioned {characterType} for client {ownerId} after {attempts + 1} attempts");
+        }
+    }
+
+    [ClientRpc]
+    private void ForcePositionUpdateWithTypeClientRpc(ulong playerId, Vector3 correctPosition, string characterType)
+    {
+        StartCoroutine(ForcePositionOnClient(playerId, correctPosition, characterType));
+    }
+    
+    [ClientRpc]
+    private void ForceResetPositionClientRpc(ulong playerId, Vector3 correctPosition, string characterType)
+    {
+        Debug.Log($"[CLIENT] Force reset position for {characterType} (Client {playerId}) to {correctPosition}");
+        StartCoroutine(ForcePositionOnClient(playerId, correctPosition, characterType));
+    }
+    
+    private IEnumerator ForcePositionOnClient(ulong playerId, Vector3 correctPosition, string characterType)
+    {
+        // Find the player object for this client ID
+        GameObject playerObject = GetPlayerByClientId(playerId);
+        if (playerObject == null)
+        {
+            // Try finding by character type name if client ID lookup fails
+            playerObject = GameObject.Find($"{characterType}(Clone)");
+            if (playerObject == null)
+            {
+                Debug.LogWarning($"[CLIENT] Could not find player object for {characterType} (Client {playerId})");
+                yield break;
+            }
+        }
+        
+        Debug.Log($"[CLIENT] Found player object: {playerObject.name} for {characterType} (Client {playerId})");
+        
+        // Disable movement components
+        CharacterController cc = playerObject.GetComponent<CharacterController>();
+        Rigidbody rb = playerObject.GetComponent<Rigidbody>();
+        
+        if (cc != null) cc.enabled = false;
+        if (rb != null) rb.isKinematic = true;
+        
         yield return null;
         
-        if (playerInstance != null)
-        {
-            playerInstance.transform.position = correctPosition;
-            
-            // If it has a CharacterController, disable and re-enable it
-            CharacterController cc = playerInstance.GetComponent<CharacterController>();
-            if (cc != null)
-            {
-                cc.enabled = false;
-                yield return null;
-                cc.enabled = true;
-            }
-            
-            Debug.Log($"Forced position update to {correctPosition} for {playerInstance.name}");
-        }
+        // Set position
+        playerObject.transform.position = correctPosition;
+        
+        yield return null;
+        
+        // Re-enable components
+        if (cc != null) cc.enabled = true;
+        if (rb != null) rb.isKinematic = false;
+        
+        Debug.Log($"[CLIENT] Updated position for {characterType} (Client {playerId}) to {correctPosition}");
     }
     
     [ClientRpc]
     private void NotifyPlayerSpawnedClientRpc(ulong clientId, string characterType, Vector3 spawnPosition)
     {
         Debug.Log($"[CLIENT] Player spawned notification: {characterType} for client {clientId} at {spawnPosition}");
-        
-        // Find the spawned player on the client
-        StartCoroutine(ValidateClientSpawnPosition(clientId, characterType, spawnPosition));
     }
     
-    private IEnumerator ValidateClientSpawnPosition(ulong clientId, string characterType, Vector3 expectedPosition)
+    [ClientRpc]
+    private void ForcePositionUpdateClientRpc(ulong playerId, Vector3 correctPosition)
     {
-        // Wait a moment for the object to be fully spawned
-        yield return new WaitForSeconds(0.5f);
-        
-        GameObject spawnedPlayer = GetPlayerByClientId(clientId);
-        if (spawnedPlayer != null)
+        // Find the player object for this client ID
+        GameObject playerObject = GetPlayerByClientId(playerId);
+        if (playerObject != null)
         {
-            Vector3 actualPosition = spawnedPlayer.transform.position;
-            float distance = Vector3.Distance(actualPosition, expectedPosition);
+            CharacterController cc = playerObject.GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cc.enabled = false;
+            }
             
-            if (distance > 1f) // If position is significantly off
+            playerObject.transform.position = correctPosition;
+            
+            if (cc != null)
             {
-                Debug.LogWarning($"[CLIENT] {characterType} position mismatch! Expected: {expectedPosition}, Actual: {actualPosition}, Distance: {distance}");
-                
-                // If this is our local player, try to correct the position
-                if (NetworkManager.Singleton.LocalClientId == clientId)
-                {
-                    spawnedPlayer.transform.position = expectedPosition;
-                    Debug.Log($"[CLIENT] Corrected local player position to {expectedPosition}");
-                }
+                cc.enabled = true;
             }
-            else
-            {
-                Debug.Log($"[CLIENT] {characterType} position validated: {actualPosition}");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"[CLIENT] Could not find spawned player for client {clientId}");
+            
+            Debug.Log($"[CLIENT] Force updated position for player {playerId} to {correctPosition}");
         }
     }
     
@@ -451,6 +641,7 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log($"Dew Spawn Point: {dewSpawnPoint.name}");
             Debug.Log($"  Position: {dewSpawnPoint.position}");
+            Debug.Log($"  Network Position: {_dewSpawnPosition.Value}");
             Debug.Log($"  Rotation: {dewSpawnPoint.rotation}");
             Debug.Log($"  Active: {dewSpawnPoint.gameObject.activeInHierarchy}");
         }
@@ -463,6 +654,7 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log($"Sol Spawn Point: {solSpawnPoint.name}");
             Debug.Log($"  Position: {solSpawnPoint.position}");
+            Debug.Log($"  Network Position: {_solSpawnPosition.Value}");
             Debug.Log($"  Rotation: {solSpawnPoint.rotation}");
             Debug.Log($"  Active: {solSpawnPoint.gameObject.activeInHierarchy}");
         }
@@ -505,22 +697,6 @@ public class GameManager : NetworkBehaviour
         }
     }
     
-    [ContextMenu("Debug: Show All Spawned NetworkObjects")]
-    public void DebugShowAllNetworkObjects()
-    {
-        Debug.Log("=== ALL NETWORK OBJECTS ===");
-        var networkObjects = FindObjectsOfType<NetworkObject>();
-        
-        foreach (var netObj in networkObjects)
-        {
-            Debug.Log($"NetworkObject: {netObj.name}");
-            Debug.Log($"  Owner: {netObj.OwnerClientId}");
-            Debug.Log($"  Position: {netObj.transform.position}");
-            Debug.Log($"  IsSpawned: {netObj.IsSpawned}");
-            Debug.Log($"  Has CharacterController: {netObj.GetComponent<CharacterController>() != null}");
-        }
-    }
-    
     [ContextMenu("Debug: Force Validate Spawn Points")]
     public void DebugForceValidateSpawnPoints()
     {
@@ -539,20 +715,6 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Force spawning all players...");
         ValidateSpawnPoints();
         SpawnPlayersFromSelection();
-    }
-    
-    [ContextMenu("Debug: Force Fallback Spawn")]
-    public void DebugForceFallbackSpawn()
-    {
-        if (!IsServer)
-        {
-            Debug.LogWarning("Can only force spawn on server!");
-            return;
-        }
-        
-        Debug.Log("Force fallback spawning...");
-        ValidateSpawnPoints();
-        SpawnPlayersFallback();
     }
     
     [ContextMenu("Debug: Clear All Spawned Players")]
@@ -589,10 +751,16 @@ public class GameManager : NetworkBehaviour
         Debug.Log("All spawned players cleared");
     }
     
-    [ContextMenu("Debug: Clear Character Selection Data")]
-    public void DebugClearCharacterSelectionData()
+    public override void OnDestroy()
     {
-        CharacterSelectionManager.ClearSelections();
-        Debug.Log("Character selection data cleared");
+        // Clean up event subscriptions
+        if (_dewSpawnPosition != null)
+        {
+            _dewSpawnPosition.OnValueChanged -= OnDewSpawnPositionChanged;
+        }
+        if (_solSpawnPosition != null)
+        {
+            _solSpawnPosition.OnValueChanged -= OnSolSpawnPositionChanged;
+        }
     }
 }
