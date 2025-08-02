@@ -10,13 +10,12 @@ Bootcamp Takım 2, oyun geliştirme sürecinde çevik yöntemlerle çalışan, y
 
 ## 👥 Takım Rolleri
 
-| ![](https://placehold.co/60x60) | **Ad Soyad**        | **Rol**       | **Sosyal Medya**                     |
+|  | **Ad Soyad**        | **Rol**       | **Sosyal Medya**                     |
 | ------------------------------- | ------------------- | ------------- | ------------------------------------ |
-| ![](https://placehold.co/60x60) | Burak Osman Yaldız  | Product Owner | [GitHub](#) [LinkedIn](#) [Insta](#) |
-| ![](https://placehold.co/60x60) | Şuheda Özçelik      | Scrum Master  | [GitHub](#) [LinkedIn](#)            |
-| ![](https://placehold.co/60x60) | Onur Ulaş Ballıkaya | Developer     | [GitHub](#) [LinkedIn](#)            |
-| ![](https://placehold.co/60x60) | Ceren Özçetin       | Developer     | [GitHub](#) [LinkedIn](#)            |
-| ![](https://placehold.co/60x60) | Uğur Nalbant        | Developer     | [GitHub](#) [LinkedIn](#) [Insta](#) |
+| ![]() | Burak Osman Yaldız  | Product Owner | [GitHub](https://github.com/WinneRose) [LinkedIn](https://www.linkedin.com/in/winnerose/) [Instagram](https://www.instagram.com/burowinie/) |
+| ![]() | Şuheda Özçelik      | Scrum Master  | [GitHub](https://github.com/edaozcelik) [LinkedIn](https://www.linkedin.com/in/hedaozclk/)            |
+| ![]() | Onur Ulaş Ballıkaya | Developer     |  [GitHub](https://github.com/Onurulas34) [LinkedIn](https://www.linkedin.com/in/onur-ulas-ballikaya01/)            |
+| ![]() | Uğur Nalbant        | Developer     | [GitHub](https://github.com/UgurNlbnt) [LinkedIn](https://www.linkedin.com/in/u%C4%9Fur-nalbant-829745281/) |
 
 ---
 
@@ -110,8 +109,10 @@ Tohum Etkisi, iki oyunculu eşli oynanan, doğa temalı bir parti oyunudur. Oyun
 
 ## 🔗 Önemli Proje Linkleri
 
-* 🎮 Playtest: [](#)
+* 🎮 Oyun Demosu: [https://github.com/WinneRose/bootcampteam/releases/tag/bootcamp-build](https://github.com/WinneRose/bootcampteam/releases/tag/bootcamp-build)
 * 📁 GitHub Repository: [https://github.com/WinneRose/bootcampteam](https://github.com/WinneRose/bootcampteam)
+* 📄 Oyun Tasarım Dökümanı (GDD): [https://github.com/WinneRose/bootcampteam/tree/bootcamp-build/documents/GDD](https://github.com/WinneRose/bootcampteam/tree/bootcamp-build/documents/GDD)
+
 
 ---
 
