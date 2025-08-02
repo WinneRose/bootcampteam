@@ -82,7 +82,6 @@ Sol karakteri, doğanın kendini yenileme gücünün ve yaşam enerjisinin sembo
 | Donuk Yapı      | Enerjik değildir; sakin, yavaş ama kararlı hareket eder.                                   |
 | Suya Duyarlılık | Çiğ damlalarıyla etkileşim kurabilir, su kaynaklarını hissedebilir ve yönlendirebilir.     |
 | Besleyici Güç   | Çevresindeki bitkilerin gelişimini destekler, büyümelerini hızlandırabilir.                |
-| Nem Üretimi     | Gece saatlerinde ortamdaki nem oranını artırabilir, bu da çevresel canlılığa katkı sağlar. |
 
 ---
 

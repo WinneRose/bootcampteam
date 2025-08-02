@@ -56,6 +56,7 @@ Aşağıda oyunun temel seviye akışını gösteren şema yer alır:
 **Oyun Akışı Diyagramı**  
 ![Oyun Akışı](../Kaynaklar/Ekler/akis1.png)
 ![Oyun Akışı](../Kaynaklar/Ekler/akis2.png)
+[Oyun Akışı PDF](../Diyagramlar/oyunakis.pdf)
 
 > Tüm görevler soldan sağa zaman çizgisiyle ilerler.
 
@@ -71,6 +72,5 @@ Aşağıda oyunun temel seviye akışını gösteren şema yer alır:
 | **🧩 Mekanikler** | Tüm etkileşim sistemleri, oynanış mekaniği, mini-oyunlar ve kurallar.  |
 | **📣 Pazarlama** | Oyun ismi, pazarlama dili, duygusal vurgu, potansiyel kitlesi ve tanıtım araçları. |
 | **🗺️ Seviyeler** | Her bölümün adı, temasal içeriği, temel mekanik yapısı ve hedefleri. |
-| **🔖 Referanslar** | Görsel, tematik ve işitsel ilham kaynakları, karşılaştırmalı örnek oyunlar.  |
 
 ---
