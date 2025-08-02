@@ -498,6 +498,7 @@ public class GameManager : NetworkBehaviour
             Debug.Log($"Successfully positioned {characterType} for client {ownerId} after {attempts + 1} attempts");
         }
     }
+    
 
     [ClientRpc]
     private void ForcePositionUpdateWithTypeClientRpc(ulong playerId, Vector3 correctPosition, string characterType)

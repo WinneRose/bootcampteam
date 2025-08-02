@@ -26,9 +26,12 @@ public class NetHostClientPropManager : NetworkBehaviour
     
     public override void OnNetworkSpawn()
     {
+        Debug.Log($"[NetHostClientPropManager] OnNetworkSpawn - IsHost: {IsHost()}, IsClient: {IsClient()}");
+        
         if (applyOnStart)
         {
-            ApplyPropSettings();
+            // Small delay to ensure network state is fully established
+            Invoke(nameof(ApplyPropSettings), 0.1f);
         }
     }
     
@@ -37,8 +40,9 @@ public class NetHostClientPropManager : NetworkBehaviour
         // Fallback if not using NetworkBehaviour
         if (!IsSpawned && applyOnStart)
         {
+            Debug.Log("[NetHostClientPropManager] Not spawned, applying fallback settings");
             // Delay to ensure NetworkManager is ready
-            Invoke(nameof(ApplyPropSettings), 0.1f);
+            Invoke(nameof(ApplyPropSettings), 0.2f);
         }
     }
     
@@ -48,22 +52,40 @@ public class NetHostClientPropManager : NetworkBehaviour
     public void ApplyPropSettings()
     {
         bool isHost = IsHost();
+        bool isClient = IsClient();
+        
+        if (logStatus)
+        {
+            Debug.Log($"[NetHostClientPropManager] Applying settings - IsHost: {isHost}, IsClient: {isClient}");
+        }
         
         // Handle GameObjects for Host
         foreach (GameObject prop in hostOnlyProps)
         {
             if (prop != null)
             {
-                prop.SetActive(isHost);
+                bool shouldBeActive = isHost;
+                prop.SetActive(shouldBeActive);
+                
+                if (logStatus)
+                {
+                    Debug.Log($"[NetHostClientPropManager] Host prop '{prop.name}' set to: {shouldBeActive}");
+                }
             }
         }
         
-        // Handle GameObjects for Client
+        // Handle GameObjects for Client  
         foreach (GameObject prop in clientOnlyProps)
         {
             if (prop != null)
             {
-                prop.SetActive(!isHost);
+                bool shouldBeActive = isClient; // Changed from !isHost to isClient
+                prop.SetActive(shouldBeActive);
+                
+                if (logStatus)
+                {
+                    Debug.Log($"[NetHostClientPropManager] Client prop '{prop.name}' set to: {shouldBeActive}");
+                }
             }
         }
         
@@ -73,6 +95,11 @@ public class NetHostClientPropManager : NetworkBehaviour
             if (component != null)
             {
                 component.enabled = isHost;
+                
+                if (logStatus)
+                {
+                    Debug.Log($"[NetHostClientPropManager] Host component '{component.GetType().Name}' enabled: {isHost}");
+                }
             }
         }
         
@@ -81,14 +108,19 @@ public class NetHostClientPropManager : NetworkBehaviour
         {
             if (component != null)
             {
-                component.enabled = !isHost;
+                component.enabled = isClient; // Changed from !isHost to isClient
+                
+                if (logStatus)
+                {
+                    Debug.Log($"[NetHostClientPropManager] Client component '{component.GetType().Name}' enabled: {isClient}");
+                }
             }
         }
         
         if (logStatus)
         {
-            Debug.Log($"[NetcodePropManager] Props configured for: {(isHost ? "HOST" : "CLIENT")}");
-            Debug.Log($"Host props active: {hostOnlyProps.Count}, Client props active: {clientOnlyProps.Count}");
+            Debug.Log($"[NetHostClientPropManager] Props configured for: {GetPlayerTypeString()}");
+            Debug.Log($"Host props count: {hostOnlyProps.Count}, Client props count: {clientOnlyProps.Count}");
         }
     }
     
@@ -99,7 +131,7 @@ public class NetHostClientPropManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton == null)
         {
-            Debug.LogWarning("[NetcodePropManager] NetworkManager not found!");
+            Debug.LogWarning("[NetHostClientPropManager] NetworkManager not found!");
             return false;
         }
         
@@ -113,9 +145,11 @@ public class NetHostClientPropManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton == null)
         {
+            Debug.LogWarning("[NetHostClientPropManager] NetworkManager not found for IsClient check!");
             return false;
         }
         
+        // Client is someone who is connected but NOT the host
         return NetworkManager.Singleton.IsClient && !NetworkManager.Singleton.IsHost;
     }
     
@@ -147,7 +181,7 @@ public class NetHostClientPropManager : NetworkBehaviour
         if (prop != null && !clientOnlyProps.Contains(prop))
         {
             clientOnlyProps.Add(prop);
-            prop.SetActive(IsClient());
+            prop.SetActive(IsClient()); // Fixed to use IsClient() instead of IsClient()
         }
     }
     
@@ -226,18 +260,14 @@ public class NetHostClientPropManager : NetworkBehaviour
     private void OnClientConnected(ulong clientId)
     {
         // Refresh settings when clients connect
-        if (IsHost())
-        {
-            ApplyPropSettings();
-        }
+        Debug.Log($"[NetHostClientPropManager] Client {clientId} connected, refreshing settings");
+        Invoke(nameof(ApplyPropSettings), 0.1f); // Small delay for network state to settle
     }
     
     private void OnClientDisconnected(ulong clientId)
     {
-        // Refresh settings when clients disconnect
-        if (IsHost())
-        {
-            ApplyPropSettings();
-        }
+        // Refresh settings when clients disconnect  
+        Debug.Log($"[NetHostClientPropManager] Client {clientId} disconnected, refreshing settings");
+        Invoke(nameof(ApplyPropSettings), 0.1f); // Small delay for network state to settle
     }
 }
