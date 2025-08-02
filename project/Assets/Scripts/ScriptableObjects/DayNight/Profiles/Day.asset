@@ -52,7 +52,7 @@ MonoBehaviour:
   noonAmbient: {r: 1, g: 1, b: 1, a: 0}
   eveningAmbient: {r: 1, g: 0.85882354, b: 0.6745098, a: 0}
   nightAmbient: {r: 0.050980393, g: 0.050980393, b: 0.12941177, a: 0}
-  dayLengthInMinutes: 0.5
+  dayLengthInMinutes: 5
   starVisibility:
     serializedVersion: 2
     m_Curve:

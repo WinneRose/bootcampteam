@@ -54,13 +54,6 @@ public class UIOwnershipManager : NetworkBehaviour
     {
         gameObject.SetActive(true);
         
-        // Setup Canvas if this is one
-        Canvas canvas = GetComponent<Canvas>();
-        if (canvas != null)
-        {
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
-        }
         
         if (showDebugLogs)
             Debug.Log($"Enabled UI {gameObject.name} for owner (local player)");

@@ -205,7 +205,7 @@ public class AbilityUI : MonoBehaviour
         // Update water text
         if (waterText != null)
         {
-            waterText.text = $"Water: {currentWater:F0}/{maxWater:F0}";
+            waterText.text = $"EN YAKIN SU: {currentWater:F0}/{maxWater:F0}";
             
             // Color the text based on water level
             if (currentWater >= maxWater)
@@ -248,12 +248,12 @@ public class AbilityUI : MonoBehaviour
         
         if (distance == -1f)
         {
-            waterDistanceText.text = "No water sources found";
+            waterDistanceText.text = "YAKINLARDA SU YOK";
             waterDistanceText.color = waterOutOfRangeColor;
         }
         else
         {
-            waterDistanceText.text = $"Water: {distance:F1}m";
+            waterDistanceText.text = $"EN YAKIN SU: {distance:F1}m";
             waterDistanceText.color = inRange ? waterInRangeColor : waterOutOfRangeColor;
         }
     }
@@ -270,7 +270,7 @@ public class AbilityUI : MonoBehaviour
         
         if (dewSystem.IsCharging())
         {
-            waterChargingText.text = "Charging Water...";
+            waterChargingText.text = "Su Dolduruluyor...";
             waterChargingText.color = chargingColor;
             waterChargingText.gameObject.SetActive(true);
         }
@@ -278,12 +278,12 @@ public class AbilityUI : MonoBehaviour
         {
             if (dewSystem.currentWaterCapacity < dewSystem.maxWaterCapacity)
             {
-                waterChargingText.text = "Hold to charge water";
+                waterChargingText.text = "Toplamak için Sol TIKLAYINIZ";
                 waterChargingText.color = waterInRangeColor;
             }
             else
             {
-                waterChargingText.text = "Water tank full";
+                waterChargingText.text = "SU DEPOSU DOLU";
                 waterChargingText.color = readyColor;
             }
             waterChargingText.gameObject.SetActive(true);
@@ -334,7 +334,7 @@ public class AbilityUI : MonoBehaviour
             int hours = Mathf.FloorToInt(timeOfDay);
             int minutes = Mathf.FloorToInt((timeOfDay - hours) * 60f);
             timeOfDayText.text = $"{hours:D2}:{minutes:D2}";
-            timeOfDayText.color = inSunlight ? Color.yellow : Color.blue;
+            timeOfDayText.color = inSunlight ? chargingColor : Color.darkRed;
         }
     }
     

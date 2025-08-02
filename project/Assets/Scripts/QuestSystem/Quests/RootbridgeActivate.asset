@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6bf6a2d04424e47b9bd1a067d604d2, type: 3}
   m_Name: RootbridgeActivate
   m_EditorClassIdentifier: 
-  questName: Clear Mushroom
-  questDescription: Solar 5 mushrooms to activate the root bridge
+  questName: MANTARLARI TEMIZLE
+  questDescription: 5 Tane Mantar Temizle
   isCollection: 0
   isHitBased: 1
   isTimeBased: 0

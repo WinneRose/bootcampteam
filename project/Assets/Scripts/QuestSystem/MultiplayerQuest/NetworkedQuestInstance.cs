@@ -192,22 +192,22 @@ public class NetworkedQuestInstance
         
         if (IsCollectionBased())
         {
-            progressText += $"Collected: {currentData.collectedCount}/{template.collectionCount}";
+            progressText += $"TOPLANAN: {currentData.collectedCount}/{template.collectionCount}";
         }
         
         if (IsHitBased())
         {
             if (!string.IsNullOrEmpty(progressText)) progressText += " | ";
-            progressText += $"Hits: {currentData.hitCount}/{template.requiredHits}";
+            progressText += $"TEMIZLENEN: {currentData.hitCount}/{template.requiredHits}";
         }
         
         if (IsTimeBased())
         {
             if (!string.IsNullOrEmpty(progressText)) progressText += " | ";
-            progressText += $"Time: {Mathf.Ceil(currentData.timeRemaining)}s";
+            progressText += $"KALAN ZAMAN: {Mathf.Ceil(currentData.timeRemaining)}s";
         }
         
-        return string.IsNullOrEmpty(progressText) ? "In Progress" : progressText;
+        return string.IsNullOrEmpty(progressText) ? "DEVAM EDIYOR" : progressText;
     }
 
     public bool IsCompleted() => currentData.isCompleted;

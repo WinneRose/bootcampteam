@@ -13,6 +13,7 @@ TagManager:
   - BridgeActivator
   - Mushroom
   - Lake
+  - FallZone
   layers:
   - Default
   - TransparentFX

@@ -113,11 +113,11 @@ public class NetworkedQuestUIElement : MonoBehaviour
         
         if (minutes > 0)
         {
-            timeText.text = $"⏰ {minutes}:{seconds:00}";
+            timeText.text = $"{minutes}:{seconds:00}";
         }
         else
         {
-            timeText.text = $"⏰ {seconds}s";
+            timeText.text = $"{seconds}s";
         }
         
         if (timeRemaining <= 30f && !quest.IsCompleted())
@@ -172,10 +172,10 @@ public class NetworkedQuestUIElement : MonoBehaviour
         SetStatusColor(completedColor);
         
         if (progressText != null)
-            progressText.text = "COMPLETED! ✅";
+            progressText.text = "TAMAMLANDI!";
         
         if (timeText != null && timeText.gameObject.activeSelf)
-            timeText.text = "⏰ DONE!";
+            timeText.text = "TAMAMLANDI!";
         
         if (progressBar != null)
             progressBar.value = progressBar.maxValue;
@@ -204,10 +204,10 @@ public class NetworkedQuestUIElement : MonoBehaviour
         SetStatusColor(failedColor);
         
         if (progressText != null)
-            progressText.text = "FAILED! ❌";
+            progressText.text = "BAŞARISIZ OLDU";
             
         if (timeText != null && timeText.gameObject.activeSelf)
-            timeText.text = "⏰ TIME UP!";
+            timeText.text = "ZAMAN DOLDU";
 
         // Safely start coroutine
         StartCoroutine(FlashEffect(failedColor, () => {
@@ -220,10 +220,10 @@ public class NetworkedQuestUIElement : MonoBehaviour
         SetStatusColor(completedColor);
         
         if (progressText != null)
-            progressText.text = "COMPLETED! ✅";
+            progressText.text = "TAMAMLANDI!";
         
         if (timeText != null && timeText.gameObject.activeSelf)
-            timeText.text = "⏰ DONE!";
+            timeText.text = "TAMAMLANDI!";
         
         if (progressBar != null)
             progressBar.value = progressBar.maxValue;
@@ -234,10 +234,10 @@ public class NetworkedQuestUIElement : MonoBehaviour
         SetStatusColor(failedColor);
         
         if (progressText != null)
-            progressText.text = "FAILED! ❌";
+            progressText.text = "BAŞARISIZ OLDU";
             
         if (timeText != null && timeText.gameObject.activeSelf)
-            timeText.text = "⏰ TIME UP!";
+            timeText.text = "ZAMAN DOLDU";
     }
 
     private void SetStatusColor(Color color)

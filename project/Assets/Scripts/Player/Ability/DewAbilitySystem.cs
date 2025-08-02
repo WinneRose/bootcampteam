@@ -413,7 +413,7 @@ public class DewAbilitySystem : NetworkBehaviour
         }
         else
         {
-            abilityUI.UpdateWaterDistance("No water sources found");
+            abilityUI.UpdateWaterDistance("YAKINLARDA SU YOK");
         }
     }
     
@@ -460,7 +460,7 @@ public class DewAbilitySystem : NetworkBehaviour
                 sourceStatus = $" ({nearestWaterCollectionZone.GetCurrentWaterRemaining():F0}/{nearestWaterCollectionZone.GetMaxWaterCapacity():F0})";
         }
         
-        return $"Water: {nearestWaterDistance:F1}m ({rangeStatus}){sourceStatus}";
+        return $"EN YAKIN SU: {nearestWaterDistance:F1}m ({rangeStatus}){sourceStatus}";
     }
     
     // Get all water sources for debugging

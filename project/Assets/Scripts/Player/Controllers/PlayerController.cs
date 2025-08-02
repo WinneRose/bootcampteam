@@ -38,6 +38,22 @@ public class PlayerController : NetworkBehaviour
     private Vector3 sphereCheckPosition;
     [SerializeField] private float capsuleRadius = 0.5f;
 
+    [Header("Respawn Settings")]
+    [Tooltip("Reference to the spawn point object where player will respawn")]
+    public Transform spawnPoint;
+    
+    [Tooltip("Name of the spawn point GameObject to find automatically")]
+    public string spawnPointName = "SpawnPoint";
+    
+    [Tooltip("Tags that trigger respawn when collided with")]
+    public string[] respawnTriggerTags = { "Lake", "FallZone" };
+    
+    [Tooltip("Height offset above spawn point when respawning")]
+    public float respawnHeightOffset = 0.5f;
+    
+    [Tooltip("Clear velocity when respawning")]
+    public bool clearVelocityOnRespawn = true;
+
     [Header("Voice Effects")]
     [Tooltip("Jump voice clips (will play randomly)")]
     public AudioClip[] jumpVoiceClips;
@@ -114,6 +130,41 @@ public class PlayerController : NetworkBehaviour
         _audioSource.minDistance = 1f;
         _audioSource.maxDistance = 20f;
 
+        // Find spawn point if not assigned
+        if (spawnPoint == null)
+        {
+            // First try to find by name
+            if (!string.IsNullOrEmpty(spawnPointName))
+            {
+                GameObject spawnPointObj = GameObject.Find(spawnPointName);
+                if (spawnPointObj != null)
+                {
+                    spawnPoint = spawnPointObj.transform;
+                    Debug.Log($"Found spawn point by name: {spawnPointName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"No GameObject found with name '{spawnPointName}' for {gameObject.name}");
+                    
+                    // Fallback: try to find by tag
+                    spawnPointObj = GameObject.FindGameObjectWithTag("SpawnPoint");
+                    if (spawnPointObj != null)
+                    {
+                        spawnPoint = spawnPointObj.transform;
+                        Debug.Log($"Found spawn point by tag 'SpawnPoint' as fallback");
+                    }
+                    else
+                    {
+                        Debug.LogError($"No spawn point found by name '{spawnPointName}' or tag 'SpawnPoint' for {gameObject.name}. Respawn will use current position.");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Spawn point name is empty. Please assign a spawn point or set the spawn point name for {gameObject.name}");
+            }
+        }
+
         // Only setup for owner
         if (!IsOwner)
         {
@@ -148,6 +199,114 @@ public class PlayerController : NetworkBehaviour
         // Handle voice effects
         HandleVoiceEffects();
     }
+
+    #region Collision and Respawn
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!IsOwner) return;
+
+        // Check if the collided object has a respawn trigger tag
+        foreach (string triggerTag in respawnTriggerTags)
+        {
+            if (other.CompareTag(triggerTag))
+            {
+                Debug.Log($"Player {gameObject.name} touched {triggerTag}, respawning...");
+                RespawnToSpawnPoint();
+                return;
+            }
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!IsOwner) return;
+
+        // Check if the collided object has a respawn trigger tag
+        foreach (string triggerTag in respawnTriggerTags)
+        {
+            if (collision.gameObject.CompareTag(triggerTag))
+            {
+                Debug.Log($"Player {gameObject.name} collided with {triggerTag}, respawning...");
+                RespawnToSpawnPoint();
+                return;
+            }
+        }
+    }
+
+    private void RespawnToSpawnPoint()
+    {
+        if (spawnPoint != null)
+        {
+            Vector3 respawnPosition = spawnPoint.position + Vector3.up * respawnHeightOffset;
+            
+            // Network the respawn to all clients
+            RespawnPlayerServerRpc(respawnPosition, spawnPoint.rotation);
+        }
+        else
+        {
+            Debug.LogError($"No spawn point available for {gameObject.name}! Cannot respawn.");
+        }
+    }
+
+    [ServerRpc]
+    private void RespawnPlayerServerRpc(Vector3 position, Quaternion rotation)
+    {
+        // Move the player on the server
+        transform.position = position;
+        transform.rotation = rotation;
+
+        if (clearVelocityOnRespawn && _rb != null)
+        {
+            _rb.linearVelocity = Vector3.zero;
+            _rb.angularVelocity = Vector3.zero;
+        }
+
+        // Update all clients
+        RespawnPlayerClientRpc(position, rotation);
+    }
+
+    [ClientRpc]
+    private void RespawnPlayerClientRpc(Vector3 position, Quaternion rotation)
+    {
+        // Update position on all clients
+        transform.position = position;
+        transform.rotation = rotation;
+
+        if (clearVelocityOnRespawn && _rb != null)
+        {
+            _rb.linearVelocity = Vector3.zero;
+            _rb.angularVelocity = Vector3.zero;
+        }
+
+        // Reset movement state
+        if (IsOwner)
+        {
+            holdTimer = 0f;
+            isRunning = false;
+            currentAnimSpeed = 0f;
+            
+            if (_animator != null)
+            {
+                _animator.SetFloat("speed", 0f);
+            }
+        }
+    }
+
+    [ContextMenu("Debug Voice Settings")]
+    public void DebugVoiceSettings()
+    {
+        Debug.Log($"=== Voice Settings Debug for {gameObject.name} ===");
+        Debug.Log($"IsOwner: {IsOwner}");
+        Debug.Log($"AudioSource: {(_audioSource != null ? "Found" : "NULL")}");
+        Debug.Log($"Jump clips: {(jumpVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Walk clips: {(walkVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Run clips: {(runVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Landing clips: {(landingVoiceClips?.Length ?? 0)}");
+        Debug.Log($"Voice volume: {voiceVolume}");
+    }
+
+    #endregion
 
     private void HandleVoiceEffects()
     {
@@ -474,17 +633,35 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ContextMenu("Debug Voice Settings")]
-    public void DebugVoiceSettings()
+    [ContextMenu("Test Respawn")]
+    public void TestRespawn()
     {
-        Debug.Log($"=== Voice Settings Debug for {gameObject.name} ===");
-        Debug.Log($"IsOwner: {IsOwner}");
-        Debug.Log($"AudioSource: {(_audioSource != null ? "Found" : "NULL")}");
-        Debug.Log($"Jump clips: {(jumpVoiceClips?.Length ?? 0)}");
-        Debug.Log($"Walk clips: {(walkVoiceClips?.Length ?? 0)}");
-        Debug.Log($"Run clips: {(runVoiceClips?.Length ?? 0)}");
-        Debug.Log($"Landing clips: {(landingVoiceClips?.Length ?? 0)}");
-        Debug.Log($"Voice volume: {voiceVolume}");
+        if (IsOwner)
+        {
+            RespawnToSpawnPoint();
+        }
+        else
+        {
+            Debug.LogWarning("Only owner can test respawn!");
+        }
+    }
+
+    [ContextMenu("Debug Respawn Settings")]
+    public void DebugRespawnSettings()
+    {
+        Debug.Log($"=== Respawn Settings Debug for {gameObject.name} ===");
+        Debug.Log($"Spawn Point Reference: {(spawnPoint != null ? spawnPoint.name : "NULL")}");
+        Debug.Log($"Spawn Point Name to Find: '{spawnPointName}'");
+        Debug.Log($"Respawn Trigger Tags: [{string.Join(", ", respawnTriggerTags)}]");
+        Debug.Log($"Respawn Height Offset: {respawnHeightOffset}");
+        Debug.Log($"Clear Velocity on Respawn: {clearVelocityOnRespawn}");
+        
+        // Test finding spawn point
+        if (spawnPoint == null && !string.IsNullOrEmpty(spawnPointName))
+        {
+            GameObject testFind = GameObject.Find(spawnPointName);
+            Debug.Log($"Test Find Result: {(testFind != null ? $"Found '{testFind.name}'" : "Not Found")}");
+        }
     }
 
     #endregion
