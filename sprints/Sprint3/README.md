@@ -12,7 +12,7 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 > Toplantı Katılımı ve Notları ![3](https://github.com/user-attachments/assets/e94e5b12-80b3-4858-aa10-3342242bf17e)
 
 ## 📁 Daily Scrum
-> Tüm günlük konuşmaların takibi, drive linkindeki DalilyScrum2 klasörüne eklenmiştir.
+> Tüm günlük konuşmaların takibi, drive linkindeki DalilyScrum3 klasörüne eklenmiştir.
 👉 [Sprint3 Dosyaları - DailyScrum3](https://drive.google.com/drive/folders/1SyjF2IvWlsPZCNIJU0di8pfpKMvXRTDz)
 
 ## 🎯 Board & Puanlama
@@ -34,7 +34,7 @@ Sprint 3 – Yayına Hazırlık ve Sunum
 
 
 ## Ekran Görselleri (Screenshots)
-> Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots2 klasörüne eklenmiştir.
+> Oyun görsellerinin günlük tüm paylaşımları takibi, drive linkindeki Screenshots3 klasörüne eklenmiştir.
 👉 [Sprint3 Dosyaları - Screenshots3](https://drive.google.com/drive/folders/1DxL7v94_N54_vSSoPFi4vgMg7HLP7MAl)
 
 ## Sprint Review
