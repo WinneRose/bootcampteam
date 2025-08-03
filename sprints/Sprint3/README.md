@@ -7,10 +7,9 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 > Tüm görevler, puanlamalar ve ilerleme durumları Miro panosunda ayrıntılı olarak takip edilmiştir. Ayrıca ekte görselleri sunulmuştur:
 👉 [Sprint Board - Miro](https://miro.com/app/board/uXjVIk6Cir0=/)
 
-> Tahmin edilen tamamlanacak puan ![Puanlama](file:///Users/suhedaozcelik/Downloads/1.jpg)
+> Tahmin edilen tamamlanacak puan ![1](https://github.com/user-attachments/assets/45b70e29-6ee5-40e4-a3e0-88c325ca55fb)
 > Tahmin Mantığı ![TahminMantigi](https://github.com/user-attachments/assets/eb13a050-ae17-4957-9e3d-0245ff5611d0)
-> Toplantı Katılımı ve Notları ![Toplantı](/Users/suhedaozcelik/Downloads/3.jpg)
-
+> Toplantı Katılımı ve Notları ![3](https://github.com/user-attachments/assets/e94e5b12-80b3-4858-aa10-3342242bf17e)
 
 ## 📁 Daily Scrum
 > Tüm günlük konuşmaların takibi, drive linkindeki DalilyScrum2 klasörüne eklenmiştir.
@@ -18,9 +17,8 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 
 ## 🎯 Board & Puanlama
 
-> Sprint Board Updates Görseli 
-
-👉 [Sprint Board](/Users/suhedaozcelik/Downloads/3.jpg)
+> Sprint Board Updates Görseli
+![3](https://github.com/user-attachments/assets/62047fac-66a3-43a2-8b5d-2bd5e82a271c)
 
 Sprint 3 – Yayına Hazırlık ve Sunum
 * Level tasarımı 40
@@ -32,7 +30,7 @@ Sprint 3 – Yayına Hazırlık ve Sunum
 * Final test ve bug fix 80
 * 2dklık sunum videosu 80
 
->🎯 Toplam: 500 Puan
+🎯 Toplam: 500 Puan
 
 
 ## Ekran Görselleri (Screenshots)
