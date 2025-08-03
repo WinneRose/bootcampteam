@@ -31,6 +31,7 @@ Sprint 2 – Mekaniklerin ve Tasarımın Geliştirilmesi
 * Level design **40**
 * Karakter animasyonları güncelleme **45**
 * Github düzenlemesi döküman hazırlığı **20**
+
 🎯 Toplam: 350 Puan
 
 
