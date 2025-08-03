@@ -22,7 +22,7 @@ Sprint süreci boyunca yürütülen tüm çalışmalar ve ilgili belgeler aşağ
 
 Sprint 3 – Yayına Hazırlık ve Sunum
 * Level tasarımı 40
-* 2. Level tasarımı 70
+* İkinci Level tasarımı 70
 * Görev sistemi entegrasyonları & seviye yerleşimleri 70
 * Yapay zeka entegrasyonu 90
 * Oyun logosu 30
