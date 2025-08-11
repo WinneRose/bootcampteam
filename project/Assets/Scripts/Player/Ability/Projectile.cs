@@ -50,6 +50,10 @@ public class Projectile : NetworkBehaviour
     {
         Vector3 hitPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : transform.position;
         HandleHit(collision.gameObject, hitPoint);
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            collision.gameObject.SetActive(false);
+        }
     }
 
     private void HandleHit(GameObject hitObject, Vector3 hitPoint)
