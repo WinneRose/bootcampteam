@@ -254,6 +254,7 @@ MonoBehaviour:
   respawnTriggerTags:
   - Lake
   - FallZone
+  - Enemy
   respawnHeightOffset: 0.5
   clearVelocityOnRespawn: 1
   jumpVoiceClips:

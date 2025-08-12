@@ -14,11 +14,12 @@ TagManager:
   - Mushroom
   - Lake
   - FallZone
+  - Enemy
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - ground
   - Water
   - UI
   - 
